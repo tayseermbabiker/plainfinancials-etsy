@@ -2,14 +2,6 @@
   command = "echo 'Static site - no build needed'"
   publish = "."
 
-# Self-rewrite: allow standalone .netlify.app URL to work under /etsy/ subpath
-# when proxied from plainfinancials.com/etsy/*
-[[redirects]]
-  from = "/etsy/*"
-  to = "/:splat"
-  status = 200
-  force = true
-
 [[headers]]
   for = "/*"
   [headers.values]
