@@ -284,29 +284,65 @@ body {
   color: var(--red);
 }
 
-/* Standard tab quiet upsell */
+/* Standard tab — rich upsell */
 .standard-upsell {
   margin-top: 12px;
-  padding: 10px 14px;
-  border: 0.5px dashed var(--border);
-  border-radius: 12px;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.upsell-copy {
+  flex: 1;
+  min-width: 0;
+}
+.upsell-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.upsell-features {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
   color: var(--text-2);
+  line-height: 1.4;
+}
+.upsell-feature strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.upsell-dot {
+  color: var(--text-3);
+  opacity: 0.7;
 }
 .upsell-btn {
+  flex-shrink: 0;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--accent);
-  background: transparent;
+  color: #FFFFFF;
+  background: var(--accent);
   border: 0;
-  padding: 0;
+  padding: 9px 16px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  white-space: nowrap;
 }
-.upsell-btn:hover { opacity: 0.75; }
+.upsell-btn:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+}
 
 /* (verdict-card styles removed — verdict now only in Advisor via .verdict-hero) */
 
