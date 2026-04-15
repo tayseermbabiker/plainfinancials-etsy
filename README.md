@@ -23,6 +23,6 @@ Pushes to `main` auto-deploy on Netlify.
 ## Pricing
 
 - Free: Standard tab (calculator + totals)
-- Pro ($2.99/mo or $24/yr): Advisor tab (verdict, target prices, monthly goal, offsite ads risk)
+- Pro ($3.99/mo or $36/yr — save 25%): Advisor tab (verdict, target prices, monthly goal, offsite ads risk)
 
 Test the Pro view locally with `?pro=1` in the URL.
