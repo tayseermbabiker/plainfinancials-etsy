@@ -284,64 +284,124 @@ body {
   color: var(--red);
 }
 
-/* Standard tab — rich upsell */
-.standard-upsell {
+/* Standard tab — contextual blurred-preview upsell */
+.upsell-wrap {
   margin-top: 12px;
-  padding: 14px 18px;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
+  padding: 14px 16px;
+  background: var(--card);
   border: 0.5px solid var(--border);
   border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.upsell-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--border);
+  position: relative;
+}
+
+.upsell-preview-card {
+  padding: 8px 10px;
+  background: #F9FAFB;
+  border-radius: 10px;
+  border: 0.5px solid var(--border);
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.upsell-preview-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  margin-bottom: 3px;
+}
+
+.upsell-preview-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+.upsell-preview-value.blurred {
+  filter: blur(5px);
+  transition: filter 0.2s;
+}
+
+.upsell-wrap:hover .upsell-preview-value.blurred {
+  filter: blur(3px);
+}
+
+.upsell-cta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
-.upsell-copy {
+
+.upsell-cta-left {
   flex: 1;
   min-width: 0;
 }
+
 .upsell-title {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   letter-spacing: -0.01em;
 }
-.upsell-features {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+
+.upsell-sub {
   font-size: 11.5px;
   color: var(--text-2);
   line-height: 1.4;
 }
-.upsell-feature strong {
-  color: var(--text);
-  font-weight: 600;
-}
-.upsell-dot {
-  color: var(--text-3);
-  opacity: 0.7;
-}
+
 .upsell-btn {
   flex-shrink: 0;
   font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #FFFFFF;
-  background: var(--accent);
-  border: 0;
-  padding: 9px 16px;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  background: var(--card);
+  color: var(--text);
+  border: 0.5px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.15s;
-  white-space: nowrap;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
+
 .upsell-btn:hover {
-  background: var(--accent-dark);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(20,184,166,0.15);
   transform: translateY(-1px);
+}
+
+.upsell-btn-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.upsell-btn-price {
+  font-size: 10.5px;
+  color: var(--text-2);
+  font-weight: 500;
 }
 
 /* (verdict-card styles removed — verdict now only in Advisor via .verdict-hero) */

@@ -53,6 +53,11 @@ const els = {
     costs: document.querySelector(".seg-costs-adv"),
   },
   upsellToAdvisor: $("upsellToAdvisor"),
+  upsellHeadline: $("upsellHeadline"),
+  upsellSub: $("upsellSub"),
+  previewVerdict: $("previewVerdict"),
+  previewTargetPrice: $("previewTargetPrice"),
+  previewAdRisk: $("previewAdRisk"),
   verdictCard: null,
   verdictTitle: null,
   verdictReason: null,
@@ -300,6 +305,55 @@ function renderStandard({ revenue, totalEtsyFees, totalCosts, netProfit, margin 
   const pCosts = (totalCosts / total) * 100;
   setDonut(pProfit, pFees, pCosts);
   setDonutAdv(pProfit, pFees, pCosts);
+
+  renderUpsellPreview({ netProfit, margin });
+}
+
+function renderUpsellPreview({ netProfit, margin }) {
+  if (!els.upsellHeadline) return;
+
+  const salePrice = parseFloat(els.salePrice.value) || 0;
+  const shippingCharged = parseFloat(els.shippingCharged.value) || 0;
+  const shippingCost = parseFloat(els.shippingCost.value) || 0;
+  const costOfItem = parseFloat(els.costOfItem.value) || 0;
+  const revenue = salePrice + shippingCharged;
+
+  // Verdict
+  const v = verdictFor(netProfit, margin);
+  els.previewVerdict.textContent = capitalize(v.title);
+
+  // Target price for 30% margin
+  const p30 = solveForMargin(0.30, { shippingCharged, shippingCost, costOfItem });
+  els.previewTargetPrice.textContent = fmt(p30);
+
+  // Offsite Ads risk (15%)
+  const country = COUNTRIES.find((c) => c.name === els.country.value) || COUNTRIES[0];
+  const feesWithAds =
+    0.40 +
+    0.065 * revenue +
+    revenue * country.procRate +
+    country.procFixed +
+    revenue * country.regFee +
+    revenue * 0.15;
+  const totalFeesWithAds = feesWithAds * (1 + country.vat / 100);
+  const profitWithAds = revenue - totalFeesWithAds - (costOfItem + shippingCost);
+  const adDelta = profitWithAds - netProfit;
+  els.previewAdRisk.textContent = (adDelta >= 0 ? "+" : "") + fmt(adDelta) + "/order";
+
+  // Contextual headline + sub
+  if (netProfit < 0) {
+    els.upsellHeadline.textContent = "You're losing money on this product. See how to fix it.";
+    els.upsellSub.textContent = "Get the break-even price, the verdict, and whether offsite ads will make it worse.";
+  } else if (margin < 0.20) {
+    els.upsellHeadline.textContent = "This product needs a price change. See exactly what to charge.";
+    els.upsellSub.textContent = "Get the verdict, the exact target price for 30% margin, and whether offsite ads will hurt you.";
+  } else if (margin < 0.35) {
+    els.upsellHeadline.textContent = "Your margin is tight. See how to push it to 30%+.";
+    els.upsellSub.textContent = "Get the verdict, the exact price for 30% margin, and offsite ads risk — before they hit.";
+  } else {
+    els.upsellHeadline.textContent = "Your product looks strong. See how far you can scale.";
+    els.upsellSub.textContent = "Get the verdict, target prices, and whether offsite ads are safe to enable on this one.";
+  }
 }
 
 function setDonut(profitPct, feesPct, costsPct) {
