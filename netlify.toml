@@ -1,0 +1,29 @@
+[build]
+  command = "echo 'Static site - no build needed'"
+  publish = "."
+
+# Self-rewrite: allow standalone .netlify.app URL to work under /etsy/ subpath
+# when proxied from plainfinancials.com/etsy/*
+[[redirects]]
+  from = "/etsy/*"
+  to = "/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

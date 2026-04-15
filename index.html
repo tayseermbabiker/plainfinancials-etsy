@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etsy Profit Calculator 2026 — Accurate for 16 Countries</title>
+  <meta name="description" content="The only Etsy calculator built for non-US sellers. Accurate processing rates, VAT on fees, and verdict on whether to keep or kill your products." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-parent">PlainFinancials</span>
+        <span class="brand-sep">/</span>
+        <span class="brand-product">Etsy Calculator</span>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="standard" role="tab" aria-selected="true">Standard</button>
+        <button class="tab" data-tab="advisor" role="tab" aria-selected="false">Advisor</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <!-- Left: Inputs -->
+      <section class="panel inputs-panel">
+        <div class="field">
+          <label for="salePrice">Sale Price ($)</label>
+          <input type="number" id="salePrice" value="19.68" step="0.01" min="0" />
+        </div>
+
+        <div class="field">
+          <label for="shippingCharged">Shipping Charged ($)</label>
+          <input type="number" id="shippingCharged" value="4.75" step="0.01" min="0" />
+        </div>
+
+        <div class="field">
+          <label for="costOfItem">Cost of Item ($)</label>
+          <input type="number" id="costOfItem" value="11.95" step="0.01" min="0" />
+        </div>
+
+        <div class="field">
+          <label for="shippingCost">Shipping Cost ($)</label>
+          <input type="number" id="shippingCost" value="4.75" step="0.01" min="0" />
+        </div>
+
+        <div class="field">
+          <label for="country">Country</label>
+          <select id="country"></select>
+        </div>
+
+        <div class="field">
+          <label for="advertising">Advertising</label>
+          <select id="advertising">
+            <option value="none">None</option>
+            <option value="offsite15">Offsite Ads (15%)</option>
+            <option value="offsite12">Offsite Ads (12%)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Right: Results -->
+      <section class="panel results-panel">
+        <!-- Standard view -->
+        <div class="results-standard" id="resultsStandard">
+          <div class="summary-row">
+            <div class="summary-donut">
+              <svg class="donut" viewBox="0 0 42 42" id="donutSvg">
+                <circle class="donut-bg" cx="21" cy="21" r="15.915"></circle>
+                <circle class="donut-seg seg-profit" cx="21" cy="21" r="15.915"
+                        stroke-dasharray="33.8 66.2" stroke-dashoffset="25"></circle>
+                <circle class="donut-seg seg-fees" cx="21" cy="21" r="15.915"
+                        stroke-dasharray="22.3 77.7" stroke-dashoffset="-8.8"></circle>
+                <circle class="donut-seg seg-costs" cx="21" cy="21" r="15.915"
+                        stroke-dasharray="43.9 56.1" stroke-dashoffset="-31.1"></circle>
+              </svg>
+            </div>
+            <div class="summary-left">
+              <div class="summary-label">Net profit</div>
+              <div class="summary-profit" id="netProfit">$8.25</div>
+              <span class="margin-badge" id="marginBadge">33.8%</span>
+            </div>
+            <div class="summary-right">
+              <div class="stat-item">
+                <div class="stat-label">Revenue</div>
+                <div class="stat-value" id="revenue">$24.43</div>
+              </div>
+              <div class="divider-v"></div>
+              <div class="stat-item">
+                <div class="stat-label">Fees</div>
+                <div class="stat-value" id="totalFees">$5.44</div>
+              </div>
+              <div class="divider-v"></div>
+              <div class="stat-item">
+                <div class="stat-label">Costs</div>
+                <div class="stat-value" id="totalCosts">$16.70</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="standard-upsell">
+            <span>Want advice on what to do next?</span>
+            <button class="upsell-btn" id="upsellToAdvisor">Unlock the Advisor →</button>
+          </div>
+        </div>
+
+        <!-- Advisor view -->
+        <div class="results-advisor" id="resultsAdvisor" hidden>
+          <div class="advisor-panel" id="advisorStack">
+
+            <!-- Summary row -->
+            <div class="summary-row">
+              <div class="summary-donut">
+                <svg class="donut" viewBox="0 0 42 42" id="donutSvgAdvisor">
+                  <circle class="donut-bg" cx="21" cy="21" r="15.915"></circle>
+                  <circle class="donut-seg seg-profit-adv" cx="21" cy="21" r="15.915"
+                          stroke-dasharray="15 85" stroke-dashoffset="25"></circle>
+                  <circle class="donut-seg seg-fees-adv" cx="21" cy="21" r="15.915"
+                          stroke-dasharray="17 83" stroke-dashoffset="10"></circle>
+                  <circle class="donut-seg seg-costs-adv" cx="21" cy="21" r="15.915"
+                          stroke-dasharray="68 32" stroke-dashoffset="-7"></circle>
+                </svg>
+              </div>
+              <div class="summary-left">
+                <div class="summary-label">Net profit</div>
+                <div class="summary-profit" id="advNetProfit">$3.66</div>
+                <span class="margin-badge" id="advMarginStat">15.0%</span>
+              </div>
+              <div class="summary-right">
+                <div class="stat-item">
+                  <div class="stat-label">Revenue</div>
+                  <div class="stat-value" id="advRevenue">$24.43</div>
+                </div>
+                <div class="divider-v"></div>
+                <div class="stat-item">
+                  <div class="stat-label">Fees</div>
+                  <div class="stat-value" id="advFees">$4.07</div>
+                </div>
+                <div class="divider-v"></div>
+                <div class="stat-item">
+                  <div class="stat-label">Costs</div>
+                  <div class="stat-value" id="advCosts">$16.70</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Verdict hero -->
+            <div class="verdict-hero" id="advVerdict">
+              <div class="verdict-left">
+                <div class="verdict-tag">Verdict</div>
+                <div class="verdict-word" id="advVerdictWord">Reprice</div>
+                <div class="verdict-reason" id="advVerdictText">Margin is too thin — raise price before enabling offsite ads.</div>
+              </div>
+              <div class="verdict-target">
+                <div class="verdict-target-label">30% margin target</div>
+                <div class="verdict-target-price" id="advVerdictTarget">$26.20</div>
+                <div class="verdict-target-sub">item price only</div>
+              </div>
+            </div>
+
+            <!-- 2x2 supporting cards -->
+            <div class="cards-grid">
+              <div class="card" id="advPrices">
+                <div class="card-label">Target prices</div>
+                <div class="card-rows">
+                  <div class="price-row"><span class="price-tier">Break-even</span><span class="price-val" id="priceBreakEven">—</span></div>
+                  <div class="price-row"><span class="price-tier">30% margin</span><span class="price-val highlight" id="price30">—</span></div>
+                  <div class="price-row"><span class="price-tier">40% margin</span><span class="price-val" id="price40">—</span></div>
+                </div>
+              </div>
+
+              <div class="card" id="advMargin">
+                <div class="card-label">Margin</div>
+                <div class="card-main" id="advMarginText">15.0% — too thin</div>
+                <div class="card-sub" id="advMarginSub">Need $26.20 to hit 30%</div>
+                <div class="margin-bar-wrap">
+                  <div class="margin-bar-fill" id="advMarginBar"></div>
+                </div>
+              </div>
+
+              <div class="card" id="advWage">
+                <div class="card-label" id="advWageLabel">Monthly goal</div>
+
+                <div class="wage-mode" id="wageVolumeMode">
+                  <div class="card-main" id="volumeValue">63 sales → $500/mo</div>
+                  <div class="card-sub">Based on current profit/order</div>
+                  <a href="#" class="wage-toggle" id="toHourly">I make this myself →</a>
+                </div>
+
+                <div class="wage-mode" id="wageHourlyMode" hidden>
+                  <div class="wage-mins-row">
+                    <label for="laborMinutes">Min/item:</label>
+                    <input type="number" id="laborMinutes" min="0" step="1" placeholder="12" />
+                  </div>
+                  <div class="card-main" id="wageValue">—</div>
+                  <div class="card-sub" id="advWageText">After all fees & costs</div>
+                  <a href="#" class="wage-toggle" id="toVolume">← Use volume instead</a>
+                </div>
+              </div>
+
+              <div class="card" id="advAds">
+                <div class="card-label">Offsite ads risk</div>
+                <div class="card-main" id="advAdsText">Safe at 15% ads</div>
+                <div class="card-sub" id="advAdsSub">Margin stays healthy</div>
+              </div>
+            </div>
+
+            <!-- Cross-sell footer strip -->
+            <div class="crosssell">
+              <span class="crosssell-text">Want your whole business analyzed?</span>
+              <a class="crosssell-link" href="https://plainfinancials.com" target="_blank" rel="noopener">PlainFinancials <span class="arrow-right">→</span></a>
+            </div>
+          </div>
+
+          <div class="paywall" id="paywall">
+            <div class="paywall-inner">
+              <div class="paywall-title">Unlock the Advisor</div>
+              <div class="paywall-sub">$2.99/month · or $24/year (save 2 months)</div>
+              <a href="#" class="paywall-btn">Get Pro</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Accurate for 16 countries</span>
+      <span class="dot-sep">·</span>
+      <span>Verified against real Etsy invoices</span>
+      <span class="dot-sep">·</span>
+      <a href="https://plainfinancials.com" target="_blank" rel="noopener">plainfinancials.com</a>
+    </footer>
+  </div>
+
+  <script src="js/calculator.js"></script>
+</body>
+</html>
