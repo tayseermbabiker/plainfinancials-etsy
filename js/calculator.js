@@ -145,8 +145,10 @@ function init() {
         els.resultsStandard.hidden = false;
         els.resultsAdvisor.hidden = true;
       }
+      updateAuthSlotVisibility();
     });
   });
+  updateAuthSlotVisibility();
 
   // Shipping auto-sync
   els.shippingCharged.addEventListener("input", () => {
@@ -597,6 +599,20 @@ function updatePaywall() {
   } else {
     els.paywall.classList.remove("hidden");
     els.advisorStack.classList.add("blurred");
+  }
+  updateAuthSlotVisibility();
+}
+
+// Hide Log in on Standard tab when not signed in — avoid noise.
+// Show email + logout anywhere user is signed in, and show Log in on Advisor.
+function updateAuthSlotVisibility() {
+  const slot = document.getElementById("authSlot");
+  if (!slot) return;
+  const authed = typeof authUser !== "undefined" && authUser !== null;
+  if (activeTab === "standard" && !authed) {
+    slot.hidden = true;
+  } else {
+    slot.hidden = false;
   }
 }
 

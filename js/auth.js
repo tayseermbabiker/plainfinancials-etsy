@@ -35,29 +35,43 @@ async function signUpUser(email, password, fullName) {
   const client = sb();
   if (!client) return { error: { message: 'Auth unavailable' } };
 
-  const { data, error } = await client.auth.signUp({
-    email,
-    password,
-    options: { data: { full_name: fullName || '' } },
-  });
-
-  if (!error && data.user) {
-    // Create/update profile row (matches PlainFinancials schema)
-    await client.from('profiles').upsert({
-      id: data.user.id,
+  try {
+    const { data, error } = await client.auth.signUp({
       email,
-      full_name: fullName || '',
-      created_at: new Date().toISOString(),
-    }, { onConflict: 'id' });
-  }
+      password,
+      options: { data: { full_name: fullName || '' } },
+    });
 
-  return { data, error };
+    if (!error && data.user) {
+      // Create/update profile row (matches PlainFinancials schema)
+      try {
+        await client.from('profiles').upsert({
+          id: data.user.id,
+          email,
+          full_name: fullName || '',
+          created_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+      } catch (pe) {
+        console.warn('profile upsert failed (non-fatal):', pe);
+      }
+    }
+
+    return { data, error };
+  } catch (e) {
+    console.error('signUp threw:', e);
+    return { error: { message: (e && e.message) || 'Network error. Check your connection or ad blocker.' } };
+  }
 }
 
 async function signInUser(email, password) {
   const client = sb();
   if (!client) return { error: { message: 'Auth unavailable' } };
-  return await client.auth.signInWithPassword({ email, password });
+  try {
+    return await client.auth.signInWithPassword({ email, password });
+  } catch (e) {
+    console.error('signIn threw:', e);
+    return { error: { message: (e && e.message) || 'Network error. Check your connection or ad blocker.' } };
+  }
 }
 
 async function signOutUser() {
