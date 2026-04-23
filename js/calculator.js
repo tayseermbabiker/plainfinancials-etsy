@@ -116,10 +116,24 @@ function init() {
     els.country.appendChild(opt);
   });
 
-  // Pro flag via URL
+  // Pro flag via URL (dev/testing only)
   const params = new URLSearchParams(window.location.search);
   if (params.get("pro") === "1") isPro = true;
   updatePaywall();
+
+  // Paywall CTAs — open auth modal
+  const paywallCta = document.getElementById("paywallCta");
+  if (paywallCta) {
+    paywallCta.addEventListener("click", () => {
+      if (typeof openAuthModal === "function") openAuthModal("signup");
+    });
+  }
+  const paywallLogin = document.getElementById("paywallLogin");
+  if (paywallLogin) {
+    paywallLogin.addEventListener("click", () => {
+      if (typeof openAuthModal === "function") openAuthModal("login");
+    });
+  }
 
   // Tab switching
   els.tabs.forEach((tab) => {
@@ -164,11 +178,15 @@ function init() {
     els.laborMinutes.addEventListener("input", calculate);
   }
 
-  // Standard tab upsell button — switches to Advisor tab
+  // Standard tab upsell button — switch tab; if not signed in, open modal
   if (els.upsellToAdvisor) {
     els.upsellToAdvisor.addEventListener("click", () => {
       const advisorTab = document.querySelector('.tab[data-tab="advisor"]');
       if (advisorTab) advisorTab.click();
+      const authed = typeof authUser !== "undefined" && authUser !== null;
+      if (!authed && !isPro && typeof openAuthModal === "function") {
+        openAuthModal("signup");
+      }
     });
   }
 
@@ -635,7 +653,10 @@ function solveForMargin(targetMargin, { shippingCharged, shippingCost, costOfIte
 
 // ---------- Paywall ----------
 function updatePaywall() {
-  if (isPro) {
+  const authed = typeof authUser !== "undefined" && authUser !== null;
+  const unlocked = isPro || (authed && typeof userHasPro === "function" && userHasPro(authUser));
+
+  if (unlocked) {
     els.paywall.classList.add("hidden");
     els.advisorStack.classList.remove("blurred");
   } else {
