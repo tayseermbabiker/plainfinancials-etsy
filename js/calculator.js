@@ -350,7 +350,9 @@ function readInputs() {
 }
 
 function feesFor({ revenue, country, etsyAdsRate, offsiteRate }) {
-  const listingPlusRenew = 0.40;
+  // Etsy charges $0.20 per sale (the auto-renewal fee). The original $0.20 listing
+  // fee is paid once when creating the listing, not per sale — don't double-count.
+  const listingPlusRenew = 0.20;
   const transaction = 0.065 * revenue;
   const processing = revenue * country.procRate + country.procFixed;
   const regFee = revenue * country.regFee;
@@ -382,6 +384,11 @@ function fmt(n) {
   if (!isFinite(n)) return "—";
   const sign = n < 0 ? "-" : "";
   return sign + "$" + Math.abs(n).toFixed(2);
+}
+
+function capitalize(s) {
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 function renderStandard({ revenue, totalEtsyFees, totalCosts, netProfit, margin }) {
