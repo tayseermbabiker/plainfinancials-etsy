@@ -1,4 +1,4 @@
-/* Etsy Profit Calculator — Everbee-simple */
+/* Etsy Profit Calculator — category-aware, advisor-tone */
 
 const COUNTRIES = [
   { name: "United States", procRate: 0.030, procFixed: 0.25, regFee: 0.0000, vat: 0 },
@@ -19,89 +19,85 @@ const COUNTRIES = [
   { name: "Other (non-US)", procRate: 0.065, procFixed: 0.30, regFee: 0.0000, vat: 0 },
 ];
 
+const CATEGORIES = [
+  { id: "handmade", name: "Handmade physical", benchLo: 0.25, benchHi: 0.35, hasLabor: true,  hasShipping: true,  hint: "Candles, jewelry, soap, ceramics — things you make by hand." },
+  { id: "digital",  name: "Digital download",  benchLo: 0.70, benchHi: 0.90, hasLabor: false, hasShipping: false, hint: "Printables, templates, SVGs — no physical cost per sale." },
+  { id: "pod",      name: "Print-on-demand",   benchLo: 0.15, benchHi: 0.25, hasLabor: false, hasShipping: true,  hint: "Printify / Printful — provider makes and ships." },
+  { id: "vintage",  name: "Vintage (20+ yrs)", benchLo: 0.40, benchHi: 0.60, hasLabor: false, hasShipping: true,  hint: "Resold items 20+ years old — no manufacturing cost." },
+  { id: "supplies", name: "Craft supplies",    benchLo: 0.20, benchHi: 0.40, hasLabor: true,  hasShipping: true,  hint: "Beads, yarn, fabric, kits — bought wholesale, resold." },
+];
+
 const DEFAULT_COUNTRY = "United Arab Emirates";
+const DEFAULT_CATEGORY = "handmade";
 
 // ---------- State ----------
 let shippingCostEdited = false;
 let activeTab = "standard";
 let isPro = false;
-let wageMode = "volume"; // "volume" or "hourly"
 
 // ---------- DOM ----------
 const $ = (id) => document.getElementById(id);
 
 const els = {
+  // Inputs
+  category: $("category"),
+  categoryHint: $("categoryHint"),
   salePrice: $("salePrice"),
   shippingCharged: $("shippingCharged"),
-  costOfItem: $("costOfItem"),
+  materials: $("materials"),
+  packaging: $("packaging"),
+  laborHours: $("laborHours"),
+  laborRate: $("laborRate"),
+  costSubtotal: $("costSubtotal"),
   shippingCost: $("shippingCost"),
   country: $("country"),
-  advertising: $("advertising"),
+  etsyAds: $("etsyAds"),
+  offsiteAds: $("offsiteAds"),
+  // Rows (to toggle visibility by category)
+  rowShippingCharged: $("rowShippingCharged"),
+  rowLabor: $("rowLabor"),
+  rowShippingCost: $("rowShippingCost"),
+  // Standard right
   netProfit: $("netProfit"),
   marginBadge: $("marginBadge"),
   totalFees: $("totalFees"),
   totalCosts: $("totalCosts"),
   revenue: $("revenue"),
-  donutSegs: {
-    profit: document.querySelector(".seg-profit"),
-    fees: document.querySelector(".seg-fees"),
-    costs: document.querySelector(".seg-costs"),
-  },
-  donutSegsAdv: {
-    profit: document.querySelector(".seg-profit-adv"),
-    fees: document.querySelector(".seg-fees-adv"),
-    costs: document.querySelector(".seg-costs-adv"),
-  },
-  verdictCard: null,
-  verdictTitle: null,
-  verdictReason: null,
+  // Advisor right
   resultsStandard: $("resultsStandard"),
   resultsAdvisor: $("resultsAdvisor"),
   advisorStack: $("advisorStack"),
   paywall: $("paywall"),
-  advShipping: $("advShipping"),
-  advShippingText: $("advShippingText"),
-  advMargin: $("advMargin"),
-  advMarginText: $("advMarginText"),
-  // Summary row
   advNetProfit: $("advNetProfit"),
   advRevenue: $("advRevenue"),
   advFees: $("advFees"),
   advCosts: $("advCosts"),
   advMarginStat: $("advMarginStat"),
-  // Verdict hero
-  advVerdict: $("advVerdict"),
-  advVerdictWord: $("advVerdictWord"),
-  advVerdictText: $("advVerdictText"),
-  advVerdictTarget: $("advVerdictTarget"),
-  // Cards
-  advPrices: $("advPrices"),
+  recoTitle: $("recoTitle"),
+  recoText: $("recoText"),
+  recoBenchmark: $("recoBenchmark"),
+  recoCard: $("recoCard"),
   priceBreakEven: $("priceBreakEven"),
+  price20: $("price20"),
   price30: $("price30"),
   price40: $("price40"),
-  advMargin: $("advMargin"),
-  advMarginText: $("advMarginText"),
-  advMarginSub: $("advMarginSub"),
-  advMarginBar: $("advMarginBar"),
-  advWage: $("advWage"),
-  advWageText: $("advWageText"),
-  advWageLabel: $("advWageLabel"),
-  laborMinutes: $("laborMinutes"),
-  wageValue: $("wageValue"),
-  volumeValue: $("volumeValue"),
-  wageVolumeMode: $("wageVolumeMode"),
-  wageHourlyMode: $("wageHourlyMode"),
-  toHourly: $("toHourly"),
-  toVolume: $("toVolume"),
-  advAds: $("advAds"),
-  advAdsText: $("advAdsText"),
-  advAdsSub: $("advAdsSub"),
+  breakdownMaterials: $("breakdownMaterials"),
+  breakdownPackaging: $("breakdownPackaging"),
+  breakdownLabor: $("breakdownLabor"),
+  breakdownLaborRow: $("breakdownLaborRow"),
+  breakdownFees: $("breakdownFees"),
+  breakdownShipping: $("breakdownShipping"),
+  breakdownShippingRow: $("breakdownShippingRow"),
+  goalInput: $("goalInput"),
+  goalResult: $("goalResult"),
+  adsImpactMain: $("adsImpactMain"),
+  adsImpactSub: $("adsImpactSub"),
   tabs: document.querySelectorAll(".tab"),
 };
 
 // ---------- Init ----------
 function init() {
-  // Populate country dropdown
+  // Populate countries
   COUNTRIES.forEach((c) => {
     const opt = document.createElement("option");
     opt.value = c.name;
@@ -110,24 +106,29 @@ function init() {
     els.country.appendChild(opt);
   });
 
-  // Pro flag via URL (dev/testing only)
+  // Populate categories
+  CATEGORIES.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name;
+    if (c.id === DEFAULT_CATEGORY) opt.selected = true;
+    els.category.appendChild(opt);
+  });
+
+  // Pro flag via URL (dev/testing)
   const params = new URLSearchParams(window.location.search);
   if (params.get("pro") === "1") isPro = true;
   updatePaywall();
 
-  // Paywall CTAs — open auth modal
-  const paywallCta = document.getElementById("paywallCta");
-  if (paywallCta) {
-    paywallCta.addEventListener("click", () => {
-      if (typeof openAuthModal === "function") openAuthModal("signup");
-    });
-  }
-  const paywallLogin = document.getElementById("paywallLogin");
-  if (paywallLogin) {
-    paywallLogin.addEventListener("click", () => {
-      if (typeof openAuthModal === "function") openAuthModal("login");
-    });
-  }
+  // Paywall CTAs
+  const paywallCta = $("paywallCta");
+  if (paywallCta) paywallCta.addEventListener("click", () => {
+    if (typeof openAuthModal === "function") openAuthModal("signup");
+  });
+  const paywallLogin = $("paywallLogin");
+  if (paywallLogin) paywallLogin.addEventListener("click", () => {
+    if (typeof openAuthModal === "function") openAuthModal("login");
+  });
 
   // Tab switching
   els.tabs.forEach((tab) => {
@@ -138,136 +139,103 @@ function init() {
         t.classList.toggle("active", isActive);
         t.setAttribute("aria-selected", isActive ? "true" : "false");
       });
-      if (activeTab === "advisor") {
-        els.resultsStandard.hidden = true;
-        els.resultsAdvisor.hidden = false;
-      } else {
-        els.resultsStandard.hidden = false;
-        els.resultsAdvisor.hidden = true;
-      }
+      els.resultsStandard.hidden = activeTab !== "standard";
+      els.resultsAdvisor.hidden = activeTab !== "advisor";
       updateAuthSlotVisibility();
     });
   });
   updateAuthSlotVisibility();
 
-  // Shipping auto-sync
-  els.shippingCharged.addEventListener("input", () => {
-    if (!shippingCostEdited) {
-      els.shippingCost.value = els.shippingCharged.value;
-    }
+  // Category change updates visibility + benchmark
+  els.category.addEventListener("change", () => {
+    applyCategory();
     calculate();
   });
+  applyCategory();
 
+  // Shipping auto-sync
+  els.shippingCharged.addEventListener("input", () => {
+    if (!shippingCostEdited) els.shippingCost.value = els.shippingCharged.value;
+    calculate();
+  });
   els.shippingCost.addEventListener("input", () => {
     shippingCostEdited = true;
     calculate();
   });
 
-  // Other inputs
-  [els.salePrice, els.costOfItem, els.country, els.advertising].forEach((el) => {
+  // All other input listeners
+  [
+    els.salePrice, els.materials, els.packaging, els.laborHours, els.laborRate,
+    els.country, els.etsyAds, els.offsiteAds, els.goalInput,
+  ].forEach((el) => {
+    if (!el) return;
     el.addEventListener("input", calculate);
     el.addEventListener("change", calculate);
   });
 
-  // Labor minutes input (advisor-only)
-  if (els.laborMinutes) {
-    els.laborMinutes.addEventListener("input", calculate);
-  }
-
-
-  // Wage card mode toggle
-  if (els.toHourly) {
-    els.toHourly.addEventListener("click", (e) => {
-      e.preventDefault();
-      wageMode = "hourly";
-      applyWageMode();
-      calculate();
-      setTimeout(() => els.laborMinutes && els.laborMinutes.focus(), 50);
-    });
-  }
-  if (els.toVolume) {
-    els.toVolume.addEventListener("click", (e) => {
-      e.preventDefault();
-      wageMode = "volume";
-      applyWageMode();
-      calculate();
-    });
-  }
-  applyWageMode();
-
   calculate();
 }
 
-function applyWageMode() {
-  if (wageMode === "hourly") {
-    els.wageVolumeMode.hidden = true;
-    els.wageHourlyMode.hidden = false;
-    els.advWageLabel.textContent = "Your Hourly Wage";
-  } else {
-    els.wageVolumeMode.hidden = false;
-    els.wageHourlyMode.hidden = true;
-    els.advWageLabel.textContent = "Monthly Goal";
-  }
+function currentCategory() {
+  return CATEGORIES.find((c) => c.id === els.category.value) || CATEGORIES[0];
 }
 
-// ---------- Core calculation ----------
-function calculate() {
-  const salePrice = parseFloat(els.salePrice.value);
-  const shippingCharged = parseFloat(els.shippingCharged.value);
-  const costOfItem = parseFloat(els.costOfItem.value);
-  const shippingCost = parseFloat(els.shippingCost.value);
-  const countryName = els.country.value;
-  const advertising = els.advertising.value;
+function applyCategory() {
+  const cat = currentCategory();
+  els.categoryHint.textContent = cat.hint;
+  els.rowShippingCharged.hidden = !cat.hasShipping;
+  els.rowShippingCost.hidden = !cat.hasShipping;
+  els.rowLabor.hidden = !cat.hasLabor;
+  els.breakdownLaborRow.hidden = !cat.hasLabor;
+  els.breakdownShippingRow.hidden = !cat.hasShipping;
+}
 
-  const valid =
-    !isNaN(salePrice) &&
-    !isNaN(shippingCharged) &&
-    !isNaN(costOfItem) &&
-    !isNaN(shippingCost);
+// ---------- Core calc ----------
+function readInputs() {
+  const cat = currentCategory();
+  const salePrice = parseFloat(els.salePrice.value) || 0;
+  const shippingCharged = cat.hasShipping ? (parseFloat(els.shippingCharged.value) || 0) : 0;
+  const materials = parseFloat(els.materials.value) || 0;
+  const packaging = parseFloat(els.packaging.value) || 0;
+  const laborHours = cat.hasLabor ? (parseFloat(els.laborHours.value) || 0) : 0;
+  const laborRate = cat.hasLabor ? (parseFloat(els.laborRate.value) || 0) : 0;
+  const shippingCost = cat.hasShipping ? (parseFloat(els.shippingCost.value) || 0) : 0;
+  const laborCost = laborHours * laborRate;
+  const itemCost = materials + packaging + laborCost;
+  const totalCosts = itemCost + shippingCost;
+  return {
+    cat, salePrice, shippingCharged,
+    materials, packaging, laborHours, laborRate, laborCost,
+    itemCost, shippingCost, totalCosts,
+  };
+}
 
-  if (!valid) {
-    renderEmpty();
-    return;
-  }
-
-  const country = COUNTRIES.find((c) => c.name === countryName) || COUNTRIES[0];
-
-  const revenue = salePrice + shippingCharged;
+function feesFor({ revenue, country, etsyAdsRate, offsiteRate }) {
   const listingPlusRenew = 0.40;
   const transaction = 0.065 * revenue;
   const processing = revenue * country.procRate + country.procFixed;
   const regFee = revenue * country.regFee;
-  const adsRate =
-    advertising === "offsite15" ? 0.15 : advertising === "offsite12" ? 0.12 : 0;
-  const ads = revenue * adsRate;
-
+  const ads = revenue * (etsyAdsRate + offsiteRate);
   const feesSubtotal = listingPlusRenew + transaction + processing + regFee + ads;
   const vat = feesSubtotal * (country.vat / 100);
-  const totalEtsyFees = feesSubtotal + vat;
+  return feesSubtotal + vat;
+}
 
-  const totalCosts = costOfItem + shippingCost;
-  const netProfit = revenue - totalEtsyFees - totalCosts;
+function calculate() {
+  const inp = readInputs();
+  const country = COUNTRIES.find((c) => c.name === els.country.value) || COUNTRIES[0];
+  const etsyAdsRate = els.etsyAds.checked ? 0.08 : 0;   // typical Etsy Ads ~8% of revenue
+  const offsiteRate = els.offsiteAds.checked ? 0.15 : 0;
+  const revenue = inp.salePrice + inp.shippingCharged;
+  const totalEtsyFees = feesFor({ revenue, country, etsyAdsRate, offsiteRate });
+  const netProfit = revenue - totalEtsyFees - inp.totalCosts;
   const margin = revenue > 0 ? netProfit / revenue : 0;
 
-  renderStandard({
-    revenue,
-    totalEtsyFees,
-    totalCosts,
-    netProfit,
-    margin,
-  });
+  // Update cost subtotal in input panel
+  els.costSubtotal.textContent = fmt(inp.itemCost);
 
-  renderAdvisor({
-    salePrice,
-    shippingCharged,
-    shippingCost,
-    revenue,
-    totalEtsyFees,
-    totalCosts,
-    netProfit,
-    margin,
-    costOfItem,
-  });
+  renderStandard({ revenue, totalEtsyFees, totalCosts: inp.totalCosts, netProfit, margin });
+  renderAdvisor({ inp, country, etsyAdsRate, offsiteRate, revenue, totalEtsyFees, netProfit, margin });
 }
 
 // ---------- Render ----------
@@ -277,307 +245,183 @@ function fmt(n) {
   return sign + "$" + Math.abs(n).toFixed(2);
 }
 
-function renderEmpty() {
-  els.netProfit.textContent = "—";
-  els.marginBadge.textContent = "—";
-  els.totalFees.textContent = "—";
-  els.totalCosts.textContent = "—";
-  els.revenue.textContent = "—";
-  setDonut(0, 0, 0);
-  setDonutAdv(0, 0, 0);
-}
-
 function renderStandard({ revenue, totalEtsyFees, totalCosts, netProfit, margin }) {
+  const cat = currentCategory();
   els.netProfit.textContent = fmt(netProfit);
   els.netProfit.classList.toggle("negative", netProfit < 0);
 
   const marginPct = (margin * 100).toFixed(1) + "%";
   els.marginBadge.textContent = marginPct;
-  els.marginBadge.classList.remove("amber", "red");
-  if (margin < 0.20) els.marginBadge.classList.add("red");
-  else if (margin < 0.35) els.marginBadge.classList.add("amber");
+  els.marginBadge.classList.remove("amber", "red", "green");
+  applyMarginClass(els.marginBadge, margin, cat);
 
   els.totalFees.textContent = fmt(totalEtsyFees);
   els.totalCosts.textContent = fmt(totalCosts);
   els.revenue.textContent = fmt(revenue);
-
-  const profitSlice = Math.max(0, netProfit);
-  const total = Math.max(0.01, profitSlice + totalEtsyFees + totalCosts);
-  const pProfit = (profitSlice / total) * 100;
-  const pFees = (totalEtsyFees / total) * 100;
-  const pCosts = (totalCosts / total) * 100;
-  setDonut(pProfit, pFees, pCosts);
-  setDonutAdv(pProfit, pFees, pCosts);
-
 }
 
-function setDonut(profitPct, feesPct, costsPct) {
-  applyDonut(els.donutSegs, profitPct, feesPct, costsPct);
+function applyMarginClass(el, margin, cat) {
+  if (margin < cat.benchLo * 0.6) el.classList.add("red");
+  else if (margin < cat.benchLo) el.classList.add("amber");
+  else el.classList.add("green");
 }
 
-function setDonutAdv(profitPct, feesPct, costsPct) {
-  applyDonut(els.donutSegsAdv, profitPct, feesPct, costsPct);
-}
-
-function applyDonut(segs, profitPct, feesPct, costsPct) {
-  if (!segs || !segs.profit) return;
-  segs.profit.setAttribute("stroke-dasharray", `${profitPct} ${100 - profitPct}`);
-  segs.profit.setAttribute("stroke-dashoffset", "25");
-  segs.fees.setAttribute("stroke-dasharray", `${feesPct} ${100 - feesPct}`);
-  segs.fees.setAttribute("stroke-dashoffset", `${25 - profitPct}`);
-  segs.costs.setAttribute("stroke-dasharray", `${costsPct} ${100 - costsPct}`);
-  segs.costs.setAttribute("stroke-dashoffset", `${25 - profitPct - feesPct}`);
-}
-
-function verdictFor(netProfit, margin) {
-  if (netProfit < 0) {
-    return {
-      title: "KILL",
-      reason: `You lose ${fmt(Math.abs(netProfit))} on every sale.`,
-      color: "red",
-    };
-  }
-  if (margin < 0.15) {
-    return {
-      title: "REPRICE",
-      reason: "Margin too thin. Raise price for safety.",
-      color: "red",
-    };
-  }
-  if (margin < 0.25) {
-    return {
-      title: "REPRICE",
-      reason: "Healthy enough but limited room for ads.",
-      color: "amber",
-    };
-  }
-  if (margin < 0.35) {
-    return {
-      title: "KEEP",
-      reason: "Solid margin. Monitor for ad costs.",
-      color: "green",
-    };
-  }
-  return {
-    title: "SCALE",
-    reason: "Strong margin. Push inventory and ads.",
-    color: "green",
-  };
-}
-
-// ---------- Advisor (redesigned layout) ----------
-function renderAdvisor({
-  shippingCharged,
-  shippingCost,
-  revenue,
-  totalEtsyFees,
-  totalCosts,
-  netProfit,
-  margin,
-  costOfItem,
-}) {
+// ---------- Advisor ----------
+function renderAdvisor({ inp, country, etsyAdsRate, offsiteRate, revenue, totalEtsyFees, netProfit, margin }) {
+  const cat = inp.cat;
   const marginPct = (margin * 100).toFixed(1);
 
-  // Summary row
+  // Summary strip
   els.advNetProfit.textContent = fmt(netProfit);
   els.advNetProfit.classList.toggle("negative", netProfit < 0);
   els.advRevenue.textContent = fmt(revenue);
   els.advFees.textContent = fmt(totalEtsyFees);
-  els.advCosts.textContent = fmt(totalCosts);
+  els.advCosts.textContent = fmt(inp.totalCosts);
   els.advMarginStat.textContent = marginPct + "%";
-  els.advMarginStat.classList.remove("amber", "red");
-  if (margin < 0.20) els.advMarginStat.classList.add("red");
-  else if (margin < 0.35) els.advMarginStat.classList.add("amber");
+  els.advMarginStat.classList.remove("red", "amber", "green");
+  applyMarginClass(els.advMarginStat, margin, cat);
 
-  // Target prices (used in multiple places)
-  const breakEven = solveBreakEven({ shippingCharged, shippingCost, costOfItem });
-  const p30 = solveForMargin(0.30, { shippingCharged, shippingCost, costOfItem });
-  const p40 = solveForMargin(0.40, { shippingCharged, shippingCost, costOfItem });
+  // Benchmark text
+  const benchLabel = `${(cat.benchLo * 100).toFixed(0)}–${(cat.benchHi * 100).toFixed(0)}%`;
+  els.recoBenchmark.textContent = `${cat.name} benchmark: ${benchLabel}`;
+
+  // Recommendation
+  renderRecommendation({ inp, netProfit, margin, cat, p30: null });
+
+  // Target prices
+  const targets = { shippingCharged: inp.shippingCharged, shippingCost: inp.shippingCost, itemCost: inp.itemCost, country, etsyAdsRate, offsiteRate };
+  const breakEven = solveForMargin(0, targets);
+  const p20 = solveForMargin(0.20, targets);
+  const p30 = solveForMargin(0.30, targets);
+  const p40 = solveForMargin(0.40, targets);
   els.priceBreakEven.textContent = fmt(breakEven);
+  els.price20.textContent = fmt(p20);
   els.price30.textContent = fmt(p30);
   els.price40.textContent = fmt(p40);
 
-  // --- Verdict hero ---
-  const v = verdictFor(netProfit, margin);
-  els.advVerdictWord.textContent = capitalize(v.title);
-  els.advVerdict.classList.remove("green", "amber", "red");
-  if (v.color) els.advVerdict.classList.add(v.color);
+  // Re-render recommendation with correct p30
+  renderRecommendation({ inp, netProfit, margin, cat, p30 });
 
-  // Reason text with shipping context
-  let reason = v.reason;
-  if (shippingCost > shippingCharged) {
-    reason += ` You also lose ${fmt(shippingCost - shippingCharged)} on shipping.`;
-  } else if (netProfit > 0 && margin >= 0.25) {
-    // augment positive verdict with ship context if notable
-    if (shippingCharged > shippingCost * 1.5 && shippingCost > 0) {
-      reason += ` Shipping earns you extra.`;
-    }
-  }
-  els.advVerdictText.textContent = reason;
+  // Where your margin goes
+  renderBreakdown({ inp, totalEtsyFees });
 
-  // Verdict target (30% margin price)
-  els.advVerdictTarget.textContent = fmt(p30);
+  // Monthly goal
+  renderGoal({ netProfit });
 
-  // --- Margin card ---
-  let marginMain, marginSub, marginClass, barWidth, barClass;
+  // Offsite ads impact
+  renderAdsImpact({ inp, country, revenue, netProfit });
+}
+
+function renderRecommendation({ inp, netProfit, margin, cat, p30 }) {
+  let toneClass, title, text;
+  const targetText = p30 ? fmt(p30) : "—";
+
   if (netProfit < 0) {
-    marginMain = `${marginPct}% — losing money`;
-    marginSub = `Break-even at ${fmt(breakEven)}`;
-    marginClass = "red";
-    barWidth = 0;
-    barClass = "red";
-  } else if (margin < 0.15) {
-    marginMain = `${marginPct}% — too thin`;
-    marginSub = `Need ${fmt(p30)} to hit 30%`;
-    marginClass = "red";
-    barWidth = (margin / 0.50) * 100;
-    barClass = "red";
-  } else if (margin < 0.25) {
-    marginMain = `${marginPct}% — thin`;
-    marginSub = `Target ${fmt(p30)} for 30%`;
-    marginClass = "amber";
-    barWidth = (margin / 0.50) * 100;
-    barClass = "";
-  } else if (margin >= 0.35) {
-    marginMain = `${marginPct}% — strong`;
-    marginSub = "Room for ads and discounts";
-    marginClass = "green";
-    barWidth = Math.min((margin / 0.50) * 100, 100);
-    barClass = "green";
+    toneClass = "red";
+    title = "You're losing money on this product.";
+    const biggest = biggestCostDriver(inp);
+    text = `${biggest.label} is eating your margin. Three ways out: raise to ${targetText} for a 30% margin, trim ${biggest.trim}, or rethink whether this product earns its place. Check competitor prices before raising — you know your market better than we do.`;
+  } else if (margin < cat.benchLo) {
+    toneClass = "amber";
+    title = `You're below the ${cat.name.toLowerCase()} range, mostly because of ${biggestCostDriver(inp).label.toLowerCase()}.`;
+    const biggest = biggestCostDriver(inp);
+    text = `Three ways out: raise to ${targetText} for a 30% margin, trim ${biggest.trim}, or batch to cut ${biggest.label.toLowerCase()} per unit. Check competitor prices before raising — you know your market better than we do.`;
+  } else if (margin < cat.benchHi) {
+    toneClass = "";
+    title = `You're inside the healthy range for ${cat.name.toLowerCase()}.`;
+    text = `Your ${(margin * 100).toFixed(1)}% margin is working. To push higher, ${targetText} gets you to 30%. Watch for ad costs — they can eat 8–15% quickly.`;
   } else {
-    marginMain = `${marginPct}% — healthy`;
-    marginSub = "Monitor for ad impact";
-    marginClass = "";
-    barWidth = (margin / 0.50) * 100;
-    barClass = "";
+    toneClass = "green";
+    title = `Strong margin for ${cat.name.toLowerCase()} — room to scale.`;
+    text = `At ${(margin * 100).toFixed(1)}% you can afford Etsy Ads, discounts, or offsite ads if you cross $10k. Consider this a product worth pushing volume on.`;
   }
-  els.advMarginText.textContent = marginMain;
-  els.advMarginText.className = "card-main " + marginClass;
-  els.advMarginSub.textContent = marginSub;
-  els.advMarginBar.style.width = Math.max(0, Math.min(barWidth, 100)) + "%";
-  els.advMarginBar.className = "margin-bar-fill " + barClass;
 
-  // --- Monthly Goal / Hourly Wage ---
-  renderWage({ netProfit });
-
-  // --- Offsite Ads Risk ---
-  renderAdsRisk({ shippingCharged, shippingCost, costOfItem, netProfit, revenue });
+  els.recoCard.classList.remove("red", "amber", "green");
+  if (toneClass) els.recoCard.classList.add(toneClass);
+  els.recoTitle.textContent = title;
+  els.recoText.textContent = text;
 }
 
-function capitalize(s) {
-  if (!s) return "";
-  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+function biggestCostDriver(inp) {
+  const items = [
+    { label: "Labor", value: inp.laborCost, trim: "time per unit (batch work)" },
+    { label: "Materials", value: inp.materials, trim: "material costs (bulk supplier?)" },
+    { label: "Packaging", value: inp.packaging, trim: "packaging (simpler mailer?)" },
+    { label: "Shipping gap", value: Math.max(0, inp.shippingCost - inp.shippingCharged), trim: "shipping loss (charge more?)" },
+  ].sort((a, b) => b.value - a.value);
+  return items[0];
 }
 
-function renderWage({ netProfit }) {
-  if (wageMode === "hourly") {
-    const mins = parseFloat(els.laborMinutes.value);
-    if (!mins || mins <= 0 || !isFinite(netProfit)) {
-      els.wageValue.textContent = "—";
-      els.wageValue.className = "card-main";
-      els.advWageText.textContent = "Enter minutes per item.";
-      return;
-    }
-    const wage = netProfit / (mins / 60);
-    els.wageValue.textContent = fmt(wage) + "/hr";
-    if (wage < 7.25) {
-      els.wageValue.className = "card-main red";
-      els.advWageText.textContent = "Below US minimum wage.";
-    } else if (wage < 15) {
-      els.wageValue.className = "card-main amber";
-      els.advWageText.textContent = "Worse than freelancing.";
-    } else if (wage < 30) {
-      els.wageValue.className = "card-main green";
-      els.advWageText.textContent = "Solid. Skilled contractor rate.";
+function renderBreakdown({ inp, totalEtsyFees }) {
+  els.breakdownMaterials.textContent = fmt(inp.materials);
+  els.breakdownPackaging.textContent = fmt(inp.packaging);
+  if (inp.cat.hasLabor) els.breakdownLabor.textContent = fmt(inp.laborCost);
+  els.breakdownFees.textContent = fmt(totalEtsyFees);
+  if (inp.cat.hasShipping) {
+    const gap = inp.shippingCost - inp.shippingCharged;
+    if (gap > 0) {
+      els.breakdownShipping.textContent = `-${fmt(gap)}`;
+      els.breakdownShipping.classList.add("red");
     } else {
-      els.wageValue.className = "card-main green";
-      els.advWageText.textContent = "Your time is well-valued.";
+      els.breakdownShipping.textContent = fmt(0);
+      els.breakdownShipping.classList.remove("red");
     }
+  }
+
+  // Highlight biggest driver with amber
+  document.querySelectorAll(".breakdown-value").forEach(el => el.classList.remove("amber"));
+  const biggest = biggestCostDriver(inp);
+  const map = {
+    "Labor": els.breakdownLabor,
+    "Materials": els.breakdownMaterials,
+    "Packaging": els.breakdownPackaging,
+    "Shipping gap": els.breakdownShipping,
+  };
+  if (map[biggest.label] && biggest.value > 0) map[biggest.label].classList.add("amber");
+}
+
+function renderGoal({ netProfit }) {
+  const goal = parseFloat(els.goalInput.value) || 500;
+  if (!isFinite(netProfit) || netProfit <= 0) {
+    els.goalResult.textContent = "Need a positive net profit first.";
+    return;
+  }
+  const sales = Math.ceil(goal / netProfit);
+  els.goalResult.innerHTML = `At ${fmt(netProfit)}/order, that's <strong>${sales} sales/month</strong>.`;
+}
+
+function renderAdsImpact({ inp, country, revenue, netProfit }) {
+  // What happens if 15% offsite applies to this order?
+  const withOffsite = feesFor({
+    revenue,
+    country,
+    etsyAdsRate: els.etsyAds.checked ? 0.08 : 0,
+    offsiteRate: 0.15,
+  });
+  const profitWithOffsite = revenue - withOffsite - inp.totalCosts;
+  const delta = profitWithOffsite - netProfit;
+
+  if (els.offsiteAds.checked) {
+    els.adsImpactMain.textContent = "Offsite ads already applied above.";
+    els.adsImpactSub.textContent = "15% fee is mandatory once your shop crosses $10k/year.";
+  } else if (profitWithOffsite < 0) {
+    els.adsImpactMain.textContent = `You'd lose ${fmt(Math.abs(profitWithOffsite))}/order.`;
+    els.adsImpactSub.textContent = "Raise price before you cross $10k — 15% offsite is mandatory after that.";
   } else {
-    if (!isFinite(netProfit) || netProfit <= 0) {
-      els.volumeValue.textContent = "—";
-      els.volumeValue.className = "card-main red";
-      return;
-    }
-    const salesNeeded = Math.ceil(500 / netProfit);
-    els.volumeValue.textContent = `${salesNeeded} sales → $500/mo`;
-    if (salesNeeded > 150) {
-      els.volumeValue.className = "card-main red";
-    } else if (salesNeeded > 50) {
-      els.volumeValue.className = "card-main amber";
-    } else {
-      els.volumeValue.className = "card-main";
-    }
+    els.adsImpactMain.textContent = `${fmt(Math.abs(delta))} less per order at 15% offsite.`;
+    els.adsImpactSub.textContent = "Mandatory once shop crosses $10k/year. Price for it now.";
   }
-}
-
-function renderAdsRisk({ shippingCharged, shippingCost, costOfItem, netProfit, revenue }) {
-  // Simulate 15% offsite ads: recompute with adsRate = 0.15
-  const country = COUNTRIES.find((c) => c.name === els.country.value) || COUNTRIES[0];
-  const simAds = revenue * 0.15;
-  const feesWithAds =
-    0.40 +
-    0.065 * revenue +
-    revenue * country.procRate +
-    country.procFixed +
-    revenue * country.regFee +
-    simAds;
-  const totalFeesWithAds = feesWithAds * (1 + country.vat / 100);
-  const profitWithAds = revenue - totalFeesWithAds - (costOfItem + shippingCost);
-  const marginWithAds = revenue > 0 ? profitWithAds / revenue : 0;
-  const marginWithAdsPct = (marginWithAds * 100).toFixed(1);
-
-  if (profitWithAds < 0) {
-    els.advAdsText.textContent = `Lose ${fmt(Math.abs(profitWithAds))}/order`;
-    els.advAdsText.className = "card-main red";
-    els.advAdsSub.textContent = "Raise price before enabling ads.";
-  } else if (marginWithAds < 0.10) {
-    els.advAdsText.textContent = `Margin drops to ${marginWithAdsPct}%`;
-    els.advAdsText.className = "card-main amber";
-    els.advAdsSub.textContent = "Razor thin with ads enabled.";
-  } else {
-    els.advAdsText.textContent = `Safe — ${marginWithAdsPct}% with ads`;
-    els.advAdsText.className = "card-main green";
-    els.advAdsSub.textContent = "Margin stays healthy.";
-  }
-}
-
-function setCard(card, textEl, text, color) {
-  card.classList.remove("green", "amber", "red");
-  if (color) card.classList.add(color);
-  if (textEl && text !== null && text !== undefined) {
-    textEl.textContent = text;
-  }
-}
-
-// Given shipping + costs, find sale price where profit = 0 (using current country + ads)
-function solveBreakEven(inputs) {
-  return solveForMargin(0, inputs);
 }
 
 // Binary search: find salePrice such that margin >= target
-function solveForMargin(targetMargin, { shippingCharged, shippingCost, costOfItem }) {
-  const country = COUNTRIES.find((c) => c.name === els.country.value) || COUNTRIES[0];
-  const advertising = els.advertising.value;
-  const adsRate =
-    advertising === "offsite15" ? 0.15 : advertising === "offsite12" ? 0.12 : 0;
-
+function solveForMargin(targetMargin, { shippingCharged, shippingCost, itemCost, country, etsyAdsRate, offsiteRate }) {
   const profitAt = (salePrice) => {
     const revenue = salePrice + shippingCharged;
-    const fees =
-      0.40 +
-      0.065 * revenue +
-      revenue * country.procRate +
-      country.procFixed +
-      revenue * country.regFee +
-      revenue * adsRate;
-    const totalFees = fees * (1 + country.vat / 100);
-    const net = revenue - totalFees - (costOfItem + shippingCost);
+    const totalFees = feesFor({ revenue, country, etsyAdsRate, offsiteRate });
+    const net = revenue - totalFees - (itemCost + shippingCost);
     return { net, revenue };
   };
-
-  let lo = 0.01;
-  let hi = 10000;
+  let lo = 0.01, hi = 10000;
   for (let i = 0; i < 60; i++) {
     const mid = (lo + hi) / 2;
     const { net, revenue } = profitAt(mid);
@@ -592,7 +436,6 @@ function solveForMargin(targetMargin, { shippingCharged, shippingCost, costOfIte
 function updatePaywall() {
   const authed = typeof authUser !== "undefined" && authUser !== null;
   const unlocked = isPro || (authed && typeof userHasPro === "function" && userHasPro(authUser));
-
   if (unlocked) {
     els.paywall.classList.add("hidden");
     els.advisorStack.classList.remove("blurred");
@@ -603,17 +446,11 @@ function updatePaywall() {
   updateAuthSlotVisibility();
 }
 
-// Hide Log in on Standard tab when not signed in — avoid noise.
-// Show email + logout anywhere user is signed in, and show Log in on Advisor.
 function updateAuthSlotVisibility() {
   const slot = document.getElementById("authSlot");
   if (!slot) return;
   const authed = typeof authUser !== "undefined" && authUser !== null;
-  if (activeTab === "standard" && !authed) {
-    slot.hidden = true;
-  } else {
-    slot.hidden = false;
-  }
+  slot.hidden = (activeTab === "standard" && !authed);
 }
 
 // ---------- Go ----------

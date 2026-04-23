@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Etsy Profit Calculator 2026 — Accurate for 16 Countries</title>
-  <meta name="description" content="The only Etsy calculator built for non-US sellers. Accurate processing rates, VAT on fees, and verdict on whether to keep or kill your products." />
+  <meta name="description" content="The only Etsy calculator built for non-US sellers. Category-aware margins, real cost inputs, and actionable pricing advice." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -30,22 +30,62 @@
       <!-- Left: Inputs -->
       <section class="panel inputs-panel">
         <div class="field">
-          <label for="salePrice">Sale Price ($)</label>
+          <label for="category">What do you sell?</label>
+          <select id="category"></select>
+          <div class="field-hint" id="categoryHint"></div>
+        </div>
+
+        <div class="field">
+          <label for="salePrice">Sale price ($)</label>
           <input type="number" id="salePrice" value="19.68" step="0.01" min="0" />
         </div>
 
-        <div class="field">
-          <label for="shippingCharged">Shipping Charged ($)</label>
+        <div class="field" id="rowShippingCharged">
+          <label for="shippingCharged">Shipping charged to buyer ($)</label>
           <input type="number" id="shippingCharged" value="4.75" step="0.01" min="0" />
         </div>
 
-        <div class="field">
-          <label for="costOfItem">Cost of Item ($)</label>
-          <input type="number" id="costOfItem" value="11.95" step="0.01" min="0" />
+        <!-- Cost block -->
+        <div class="cost-block">
+          <div class="cost-block-header">
+            <div class="cost-block-title">Your real cost per item</div>
+            <div class="cost-block-sub">Most sellers under-count this. Fill in all three.</div>
+          </div>
+
+          <div class="field compact">
+            <label for="materials">Materials ($)</label>
+            <input type="number" id="materials" value="6.50" step="0.01" min="0" />
+            <div class="field-hint">Wax, fabric, ink, beads — the stuff the product is made of.</div>
+          </div>
+
+          <div class="field compact">
+            <label for="packaging">Packaging ($)</label>
+            <input type="number" id="packaging" value="1.70" step="0.01" min="0" />
+            <div class="field-hint">Box, mailer, label, tissue, thank-you card.</div>
+          </div>
+
+          <div class="field compact" id="rowLabor">
+            <div class="labor-row">
+              <div class="labor-col">
+                <label for="laborHours">Labor (hrs)</label>
+                <input type="number" id="laborHours" value="0.25" step="0.05" min="0" />
+              </div>
+              <div class="labor-col">
+                <label for="laborRate">Rate ($/hr)</label>
+                <input type="number" id="laborRate" value="15" step="1" min="0" />
+              </div>
+            </div>
+            <div class="field-hint">Your time has a cost. 15 min × $15 = $3.75.</div>
+          </div>
+
+          <div class="cost-block-total">
+            <span class="total-label">Total cost per item</span>
+            <span class="total-value" id="costSubtotal">$11.95</span>
+          </div>
         </div>
 
-        <div class="field">
-          <label for="shippingCost">Shipping Cost ($)</label>
+        <div class="field" id="rowShippingCost">
+          <label for="shippingCost">Shipping cost you pay ($)</label>
           <input type="number" id="shippingCost" value="4.75" step="0.01" min="0" />
         </div>
 
@@ -55,12 +95,16 @@
         </div>
 
         <div class="field">
-          <label for="advertising">Advertising</label>
-          <select id="advertising">
-            <option value="none">None</option>
-            <option value="offsite15">Offsite Ads (15%)</option>
-            <option value="offsite12">Offsite Ads (12%)</option>
-          </select>
+          <label>Advertising</label>
+          <label class="check-row">
+            <input type="checkbox" id="etsyAds" />
+            <span>Running Etsy Ads (on-site, PPC)</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="offsiteAds" />
+            <span>Shop earns over $10k/year</span>
+          </label>
+          <div class="field-hint">Over $10k triggers mandatory 15% offsite ad fee on ad-attributed orders.</div>
         </div>
       </section>
 
@@ -68,22 +112,11 @@
       <section class="panel results-panel">
         <!-- Standard view -->
         <div class="results-standard" id="resultsStandard">
-          <div class="summary-row">
-            <div class="summary-donut">
-              <svg class="donut" viewBox="0 0 42 42" id="donutSvg">
-                <circle class="donut-bg" cx="21" cy="21" r="15.915"></circle>
-                <circle class="donut-seg seg-profit" cx="21" cy="21" r="15.915"
-                        stroke-dasharray="33.8 66.2" stroke-dashoffset="25"></circle>
-                <circle class="donut-seg seg-fees" cx="21" cy="21" r="15.915"
-                        stroke-dasharray="22.3 77.7" stroke-dashoffset="-8.8"></circle>
-                <circle class="donut-seg seg-costs" cx="21" cy="21" r="15.915"
-                        stroke-dasharray="43.9 56.1" stroke-dashoffset="-31.1"></circle>
-              </svg>
-            </div>
+          <div class="summary-row simple">
             <div class="summary-left">
               <div class="summary-label">Net profit</div>
-              <div class="summary-profit" id="netProfit">$8.25</div>
-              <span class="margin-badge" id="marginBadge">33.8%</span>
+              <div class="summary-profit" id="netProfit">$3.66</div>
+              <span class="margin-badge" id="marginBadge">15.0%</span>
             </div>
             <div class="summary-right">
               <div class="stat-item">
@@ -93,7 +126,7 @@
               <div class="divider-v"></div>
               <div class="stat-item">
                 <div class="stat-label">Fees</div>
-                <div class="stat-value" id="totalFees">$5.44</div>
+                <div class="stat-value" id="totalFees">$4.07</div>
               </div>
               <div class="divider-v"></div>
               <div class="stat-item">
@@ -102,26 +135,14 @@
               </div>
             </div>
           </div>
-
         </div>
 
         <!-- Advisor view -->
         <div class="results-advisor" id="resultsAdvisor" hidden>
           <div class="advisor-panel" id="advisorStack">
 
-            <!-- Summary row -->
-            <div class="summary-row">
-              <div class="summary-donut">
-                <svg class="donut" viewBox="0 0 42 42" id="donutSvgAdvisor">
-                  <circle class="donut-bg" cx="21" cy="21" r="15.915"></circle>
-                  <circle class="donut-seg seg-profit-adv" cx="21" cy="21" r="15.915"
-                          stroke-dasharray="15 85" stroke-dashoffset="25"></circle>
-                  <circle class="donut-seg seg-fees-adv" cx="21" cy="21" r="15.915"
-                          stroke-dasharray="17 83" stroke-dashoffset="10"></circle>
-                  <circle class="donut-seg seg-costs-adv" cx="21" cy="21" r="15.915"
-                          stroke-dasharray="68 32" stroke-dashoffset="-7"></circle>
-                </svg>
-              </div>
+            <!-- Summary strip -->
+            <div class="summary-row simple">
               <div class="summary-left">
                 <div class="summary-label">Net profit</div>
                 <div class="summary-profit" id="advNetProfit">$3.66</div>
@@ -145,68 +166,75 @@
               </div>
             </div>
 
-            <!-- Verdict hero -->
-            <div class="verdict-hero" id="advVerdict">
-              <div class="verdict-left">
-                <div class="verdict-tag">Verdict</div>
-                <div class="verdict-word" id="advVerdictWord">Reprice</div>
-                <div class="verdict-reason" id="advVerdictText">Margin is too thin — raise price before enabling offsite ads.</div>
+            <!-- Recommendation -->
+            <div class="reco-card" id="recoCard">
+              <div class="reco-header">
+                <div class="reco-tag">Recommendation</div>
+                <div class="reco-benchmark" id="recoBenchmark">Handmade benchmark: 25–35%</div>
               </div>
-              <div class="verdict-target">
-                <div class="verdict-target-label">30% margin target</div>
-                <div class="verdict-target-price" id="advVerdictTarget">$26.20</div>
-                <div class="verdict-target-sub">item price only</div>
-              </div>
+              <div class="reco-title" id="recoTitle"></div>
+              <div class="reco-text" id="recoText"></div>
             </div>
 
-            <!-- 2x2 supporting cards -->
+            <!-- Targets + breakdown -->
             <div class="cards-grid">
-              <div class="card" id="advPrices">
-                <div class="card-label">Target prices</div>
+              <div class="card">
+                <div class="card-label">Price targets <span class="card-label-sub">item price only</span></div>
                 <div class="card-rows">
                   <div class="price-row"><span class="price-tier">Break-even</span><span class="price-val" id="priceBreakEven">—</span></div>
+                  <div class="price-row"><span class="price-tier">20% margin</span><span class="price-val" id="price20">—</span></div>
                   <div class="price-row"><span class="price-tier">30% margin</span><span class="price-val highlight" id="price30">—</span></div>
                   <div class="price-row"><span class="price-tier">40% margin</span><span class="price-val" id="price40">—</span></div>
                 </div>
               </div>
 
-              <div class="card" id="advMargin">
-                <div class="card-label">Margin</div>
-                <div class="card-main" id="advMarginText">15.0% — too thin</div>
-                <div class="card-sub" id="advMarginSub">Need $26.20 to hit 30%</div>
-                <div class="margin-bar-wrap">
-                  <div class="margin-bar-fill" id="advMarginBar"></div>
+              <div class="card">
+                <div class="card-label">Where your margin goes</div>
+                <div class="card-rows">
+                  <div class="breakdown-row"><span>Materials</span><span class="breakdown-value" id="breakdownMaterials">—</span></div>
+                  <div class="breakdown-row"><span>Packaging</span><span class="breakdown-value" id="breakdownPackaging">—</span></div>
+                  <div class="breakdown-row" id="breakdownLaborRow"><span>Your labor</span><span class="breakdown-value" id="breakdownLabor">—</span></div>
+                  <div class="breakdown-row"><span>Etsy fees</span><span class="breakdown-value" id="breakdownFees">—</span></div>
+                  <div class="breakdown-row" id="breakdownShippingRow"><span>Shipping gap</span><span class="breakdown-value" id="breakdownShipping">—</span></div>
                 </div>
-              </div>
-
-              <div class="card" id="advWage">
-                <div class="card-label" id="advWageLabel">Monthly goal</div>
-
-                <div class="wage-mode" id="wageVolumeMode">
-                  <div class="card-main" id="volumeValue">63 sales → $500/mo</div>
-                  <div class="card-sub">Based on current profit/order</div>
-                  <a href="#" class="wage-toggle" id="toHourly">I make this myself →</a>
-                </div>
-
-                <div class="wage-mode" id="wageHourlyMode" hidden>
-                  <div class="wage-mins-row">
-                    <label for="laborMinutes">Min/item:</label>
-                    <input type="number" id="laborMinutes" min="0" step="1" placeholder="12" />
-                  </div>
-                  <div class="card-main" id="wageValue">—</div>
-                  <div class="card-sub" id="advWageText">After all fees & costs</div>
-                  <a href="#" class="wage-toggle" id="toVolume">← Use volume instead</a>
-                </div>
-              </div>
-
-              <div class="card" id="advAds">
-                <div class="card-label">Offsite ads risk</div>
-                <div class="card-main" id="advAdsText">Safe at 15% ads</div>
-                <div class="card-sub" id="advAdsSub">Margin stays healthy</div>
               </div>
             </div>
 
-            <!-- Cross-sell footer strip -->
+            <!-- Goal + ads impact -->
+            <div class="cards-grid">
+              <div class="card">
+                <div class="card-label">Monthly income goal</div>
+                <div class="goal-input-row">
+                  <span>I want to earn</span>
+                  <span class="goal-dollar">$</span>
+                  <input type="number" id="goalInput" value="500" min="0" step="50" />
+                  <span>/mo</span>
+                </div>
+                <div class="card-sub" id="goalResult">—</div>
+              </div>
+
+              <div class="card">
+                <div class="card-label">Offsite ads impact</div>
+                <div class="card-main" id="adsImpactMain">—</div>
+                <div class="card-sub" id="adsImpactSub">—</div>
+              </div>
+            </div>
+
+            <!-- Did I forget anything -->
+            <div class="card forgot-card">
+              <div class="card-label">Did I forget anything?</div>
+              <ul class="forgot-list">
+                <li><strong>Photography / props:</strong> backdrops, lighting, the first batch used for photos.</li>
+                <li><strong>Sample waste:</strong> trial runs, rejects, photos-only versions (~3% of materials).</li>
+                <li><strong>Returns allowance:</strong> 2–5% of revenue gets refunded or replaced.</li>
+                <li><strong>Listing renewal:</strong> $0.20 every 4 months per listing that doesn't sell.</li>
+                <li><strong>Software:</strong> Canva Pro, Photoshop, Cricut Access, design subs.</li>
+                <li><strong>Etsy Plus / Pattern:</strong> $10/mo + $15/mo if you use them.</li>
+              </ul>
+              <div class="card-sub forgot-sub">Add any of these to your cost inputs above if they apply.</div>
+            </div>
+
+            <!-- Cross-sell strip -->
             <div class="crosssell">
               <span class="crosssell-text">Want your whole business analyzed?</span>
               <a class="crosssell-link" href="https://plainfinancials.com" target="_blank" rel="noopener">PlainFinancials <span class="arrow-right">→</span></a>
