@@ -52,16 +52,16 @@
             <div class="cost-block-sub">Most sellers under-count this. Fill in all three.</div>
           </div>
 
-          <div class="field compact">
-            <label for="materials">Materials ($)</label>
+          <div class="field compact" id="rowMaterials">
+            <label for="materials" id="materialsLabel">Materials ($)</label>
             <input type="number" id="materials" value="6.50" step="0.01" min="0" />
-            <div class="field-hint">Wax, fabric, ink, beads — the stuff the product is made of.</div>
+            <div class="field-hint" id="materialsHint">Wax, fabric, ink, beads — the stuff the product is made of.</div>
           </div>
 
-          <div class="field compact">
+          <div class="field compact" id="rowPackaging">
             <label for="packaging">Packaging ($)</label>
             <input type="number" id="packaging" value="1.70" step="0.01" min="0" />
-            <div class="field-hint">Box, mailer, label, tissue, thank-you card.</div>
+            <div class="field-hint" id="packagingHint">Box, mailer, label, tissue, thank-you card.</div>
           </div>
 
           <div class="field compact" id="rowLabor">
@@ -75,7 +75,13 @@
                 <input type="number" id="laborRate" value="15" step="1" min="0" />
               </div>
             </div>
-            <div class="field-hint">Your time has a cost. 15 min × $15 = $3.75.</div>
+            <div class="field-hint" id="laborHint">Your time has a cost. 15 min × $15 = $3.75.</div>
+          </div>
+
+          <div class="field compact" id="rowEquipment" hidden>
+            <label for="equipment" id="equipmentLabel">Equipment recovery ($)</label>
+            <input type="number" id="equipment" value="0" step="0.01" min="0" />
+            <div class="field-hint" id="equipmentHint">Press/printer cost ÷ expected lifetime sales.</div>
           </div>
 
           <div class="cost-block-total">
@@ -191,9 +197,10 @@
               <div class="card">
                 <div class="card-label">Where your margin goes</div>
                 <div class="card-rows">
-                  <div class="breakdown-row"><span>Materials</span><span class="breakdown-value" id="breakdownMaterials">—</span></div>
-                  <div class="breakdown-row"><span>Packaging</span><span class="breakdown-value" id="breakdownPackaging">—</span></div>
+                  <div class="breakdown-row" id="breakdownMaterialsRow"><span id="breakdownMaterialsLabel">Materials</span><span class="breakdown-value" id="breakdownMaterials">—</span></div>
+                  <div class="breakdown-row" id="breakdownPackagingRow"><span>Packaging</span><span class="breakdown-value" id="breakdownPackaging">—</span></div>
                   <div class="breakdown-row" id="breakdownLaborRow"><span>Your labor</span><span class="breakdown-value" id="breakdownLabor">—</span></div>
+                  <div class="breakdown-row" id="breakdownEquipmentRow" hidden><span>Equipment</span><span class="breakdown-value" id="breakdownEquipment">—</span></div>
                   <div class="breakdown-row"><span>Etsy fees</span><span class="breakdown-value" id="breakdownFees">—</span></div>
                   <div class="breakdown-row" id="breakdownShippingRow"><span>Shipping gap</span><span class="breakdown-value" id="breakdownShipping">—</span></div>
                 </div>
