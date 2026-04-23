@@ -164,9 +164,12 @@ const els = {
   recoBenchmark: $("recoBenchmark"),
   recoCard: $("recoCard"),
   priceBreakEven: $("priceBreakEven"),
-  price20: $("price20"),
-  price30: $("price30"),
-  price40: $("price40"),
+  priceTierLow: $("priceTierLow"),
+  priceTierMid: $("priceTierMid"),
+  priceTierHigh: $("priceTierHigh"),
+  priceLow: $("priceLow"),
+  priceMid: $("priceMid"),
+  priceHigh: $("priceHigh"),
   breakdownMaterials: $("breakdownMaterials"),
   breakdownPackaging: $("breakdownPackaging"),
   breakdownLabor: $("breakdownLabor"),
@@ -431,22 +434,24 @@ function renderAdvisor({ inp, country, etsyAdsRate, offsiteRate, revenue, totalE
   const benchLabel = `${(cat.benchLo * 100).toFixed(0)}–${(cat.benchHi * 100).toFixed(0)}%`;
   els.recoBenchmark.textContent = `${cat.name} benchmark: ${benchLabel}`;
 
-  // Recommendation
-  renderRecommendation({ inp, netProfit, margin, cat, p30: null });
-
-  // Target prices
+  // Target prices — category benchmark-aware
   const targets = { shippingCharged: inp.shippingCharged, shippingCost: inp.shippingCost, itemCost: inp.itemCost, country, etsyAdsRate, offsiteRate };
+  const benchMid = (cat.benchLo + cat.benchHi) / 2;
+  const pLow = solveForMargin(cat.benchLo, targets);
+  const pMid = solveForMargin(benchMid, targets);
+  const pHigh = solveForMargin(cat.benchHi, targets);
   const breakEven = solveForMargin(0, targets);
-  const p20 = solveForMargin(0.20, targets);
-  const p30 = solveForMargin(0.30, targets);
-  const p40 = solveForMargin(0.40, targets);
+  const pctLabel = (m) => `${Math.round(m * 100)}% margin`;
+  els.priceTierLow.textContent = pctLabel(cat.benchLo);
+  els.priceTierMid.textContent = pctLabel(benchMid);
+  els.priceTierHigh.textContent = pctLabel(cat.benchHi);
   els.priceBreakEven.textContent = fmt(breakEven);
-  els.price20.textContent = fmt(p20);
-  els.price30.textContent = fmt(p30);
-  els.price40.textContent = fmt(p40);
+  els.priceLow.textContent = fmt(pLow);
+  els.priceMid.textContent = fmt(pMid);
+  els.priceHigh.textContent = fmt(pHigh);
 
-  // Re-render recommendation with correct p30
-  renderRecommendation({ inp, netProfit, margin, cat, p30 });
+  // Render recommendation using benchmark-aware target
+  renderRecommendation({ inp, netProfit, margin, cat, pBenchLo: pLow });
 
   // Where your margin goes
   renderBreakdown({ inp, totalEtsyFees });
@@ -458,36 +463,43 @@ function renderAdvisor({ inp, country, etsyAdsRate, offsiteRate, revenue, totalE
   renderAdsImpact({ inp, country, revenue, netProfit });
 }
 
-function renderRecommendation({ inp, netProfit, margin, cat, p30 }) {
+function renderRecommendation({ inp, netProfit, margin, cat, pBenchLo }) {
   let toneClass, title, text;
-  const targetText = p30 ? fmt(p30) : "—";
+  const targetText = pBenchLo && isFinite(pBenchLo) ? fmt(pBenchLo) : "—";
+  const benchLoPct = Math.round(cat.benchLo * 100);
+  const benchHiPct = Math.round(cat.benchHi * 100);
   const marginPct = (margin * 100).toFixed(1);
+  const currentPrice = inp.salePrice;
+  const targetIsAbove = pBenchLo > currentPrice;
   const driver = biggestCostDriver(inp, cat);
+  const catLower = cat.name.toLowerCase();
 
   if (netProfit < 0) {
     toneClass = "red";
     title = "You're losing money on this product.";
-    text = `${driver.label} is eating your margin. Three ways out: raise to ${targetText} for a 30% margin, ${driver.trim}, or rethink whether this product earns its place. ${cat.watchOut} Check competitor prices before raising — you know your market better than we do.`;
+    text = `${driver.label} is eating your margin. To hit the ${benchLoPct}% benchmark you'd price at ${targetText}. ${capitalize(driver.trim)}. ${cat.watchOut}`;
   } else if (margin < cat.benchLo) {
     toneClass = "amber";
-    // Category-specific root-cause phrasing
-    if (cat.id === "digital") {
-      title = `You're below the digital download range.`;
-      text = `Your ${marginPct}% margin is thin for digital. Etsy fees take a big bite on low-price downloads — raising to ${targetText} gets you to 30%, but digital sellers usually target 70%+. Consider repricing higher or bundling. ${cat.watchOut}`;
-    } else if (cat.id === "pod") {
-      title = `You're below the POD range, but POD is inherently thin.`;
-      text = `Your ${marginPct}% margin is under the 15–25% baseline. Either raise to ${targetText} (customers will compare against similar POD sellers), or scale volume and variants. ${cat.watchOut}`;
+    title = `You're below the ${catLower} range (${benchLoPct}–${benchHiPct}%).`;
+    if (targetIsAbove) {
+      if (cat.id === "digital") {
+        text = `Your ${marginPct}% margin is below the ${benchLoPct}% digital benchmark. Etsy fees take a big bite on low-price downloads — raise to ${targetText} to hit ${benchLoPct}%, or bundle more value into each listing. ${cat.watchOut}`;
+      } else if (cat.id === "pod") {
+        text = `Your ${marginPct}% margin is under the ${benchLoPct}–${benchHiPct}% POD baseline. Raise to ${targetText} for ${benchLoPct}%, but customers compare against similar POD sellers — volume and variants matter more than price hikes. ${cat.watchOut}`;
+      } else {
+        text = `Three ways out: raise to ${targetText} for a ${benchLoPct}% margin, ${driver.trim}, or batch to cut cost per unit. ${cat.watchOut} Check competitor prices before raising — you know your market better than we do.`;
+      }
     } else {
-      title = `You're below the ${cat.name.toLowerCase()} range, mostly because of ${driver.label.toLowerCase()}.`;
-      text = `Three ways out: raise to ${targetText} for a 30% margin, ${driver.trim}, or batch to cut cost per unit. ${cat.watchOut} Check competitor prices before raising — you know your market better than we do.`;
+      // Edge case — shouldn't normally happen but guard against nonsense
+      text = `Your ${marginPct}% margin is below the ${benchLoPct}% benchmark. ${capitalize(driver.trim)}. ${cat.watchOut}`;
     }
   } else if (margin < cat.benchHi) {
     toneClass = "";
-    title = `You're inside the healthy range for ${cat.name.toLowerCase()}.`;
-    text = `Your ${marginPct}% margin is working. To push higher, ${targetText} gets you to 30%. ${cat.watchOut}`;
+    title = `You're inside the healthy range for ${catLower}.`;
+    text = `Your ${marginPct}% margin is working. ${cat.watchOut}`;
   } else {
     toneClass = "green";
-    title = `Strong margin for ${cat.name.toLowerCase()} — room to scale.`;
+    title = `Strong margin for ${catLower} — room to scale.`;
     text = `At ${marginPct}% you can afford Etsy Ads, discounts, or offsite ads if you cross $10k. ${cat.watchOut}`;
   }
 
@@ -500,10 +512,18 @@ function renderRecommendation({ inp, netProfit, margin, cat, p30 }) {
 function biggestCostDriver(inp, cat) {
   const matName = (cat && cat.biggestDriverLabel) || "Materials";
   const items = [];
-  if (cat.hasMaterials) items.push({ label: capitalize(matName), value: inp.materials, trim: `trim ${matName.toLowerCase()} (bulk supplier or alternative source)` });
+  if (cat.hasMaterials) {
+    const matTrim =
+      cat.id === "digital" ? "spread design costs across more sales" :
+      cat.id === "pod"     ? "negotiate Printify/Printful volume tier" :
+      cat.id === "inhouse" ? "find cheaper blanks or buy in bulk" :
+      cat.id === "vintage" ? "source pieces for less at estate sales or auctions" :
+                             "trim materials (bulk supplier or alternative)";
+    items.push({ label: capitalize(matName), value: inp.materials, trim: matTrim });
+  }
   if (cat.hasPackaging) items.push({ label: "Packaging", value: inp.packaging, trim: "simplify packaging (cheaper mailer)" });
   if (cat.hasLabor) items.push({ label: "Labor", value: inp.laborCost, trim: "batch production to cut time per unit" });
-  if (cat.hasEquipment) items.push({ label: "Equipment", value: inp.equipment, trim: "spread equipment cost over more sales (run more units)" });
+  if (cat.hasEquipment) items.push({ label: "Equipment", value: inp.equipment, trim: "spread equipment cost over more sales" });
   if (cat.hasShippingCost) {
     const gap = Math.max(0, inp.shippingCost - inp.shippingCharged);
     items.push({ label: "Shipping gap", value: gap, trim: "charge higher shipping to close the gap" });
