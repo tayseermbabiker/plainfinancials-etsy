@@ -30,7 +30,9 @@ const CATEGORIES = [
     materialsHint: "Wax, fabric, ink, beads — the stuff the product is made of.",
     packagingHint: "Box, mailer, label, tissue, thank-you card.",
     laborHint: "Your time has a cost. 15 min × $15 = $3.75.",
-    watchOut: "Batch production is the usual fix. Making 10 at once cuts labor per unit significantly.",
+    watchOut: "Batch production is the usual fix — making 10 at once cuts labor per unit.",
+    healthyNote: "Keep an eye on your time per unit.",
+    scaleNote: "This is a product worth pushing volume on.",
     biggestDriverLabel: "materials",
   },
   {
@@ -45,7 +47,9 @@ const CATEGORIES = [
     laborHint: "Setup + pressing + QC. 20 min × $15 = $5.00.",
     equipmentLabel: "Equipment recovery ($)",
     equipmentHint: "Press/printer cost ÷ expected lifetime sales. $1,500 press ÷ 1,000 sales = $1.50/unit.",
-    watchOut: "Equipment recovery is the cost nobody prices in. If you skip this field, your Cricut is quietly eating profit.",
+    watchOut: "Equipment recovery is the cost nobody prices in — if you skip it, your gear quietly eats profit.",
+    healthyNote: "Track equipment wear — factor replacements into your recovery number.",
+    scaleNote: "Run volume to spread your equipment cost thin.",
     biggestDriverLabel: "blanks",
   },
   {
@@ -56,7 +60,9 @@ const CATEGORIES = [
     hint: "Printables, templates, SVGs — no physical cost per sale.",
     materialsLabel: "Design cost per sale ($)",
     materialsHint: "Font licenses, stock images, software — divided by expected sales. $50 license ÷ 100 sales = $0.50.",
-    watchOut: "Etsy fees hit hardest on low-price digitals. A $5 download can lose 30%+ to fees alone.",
+    watchOut: "Low-price downloads lose disproportionately to Etsy fees. Bundle or raise perceived value.",
+    healthyNote: "Scale volume — fees shrink as a % at higher prices.",
+    scaleNote: "Push volume. Fees are nearly invisible at this margin level.",
     biggestDriverLabel: "Etsy fees",
   },
   {
@@ -68,6 +74,8 @@ const CATEGORIES = [
     materialsLabel: "Provider base cost ($)",
     materialsHint: "What Printify/Printful charges per unit — includes product, printing, and their shipping.",
     watchOut: "POD margins are thin by design. Scale on volume and variants, not on price increases.",
+    healthyNote: "Expand variants (colors, sizes) — POD scales on variety, not price.",
+    scaleNote: "Test more designs. POD is a volume-and-variety game.",
     biggestDriverLabel: "provider base cost",
   },
   {
@@ -80,6 +88,8 @@ const CATEGORIES = [
     materialsHint: "What you paid at the estate sale / thrift / flip.",
     packagingHint: "Bubble wrap, sturdy box — vintage needs careful packing.",
     watchOut: "Shipping breakage is real. Price insurance into your shipping charge or eat the replacement cost.",
+    healthyNote: "Watch shipping breakage — one broken piece eats a whole week's margin.",
+    scaleNote: "Strong margin, but vintage doesn't scale like handmade — each piece is one-of-a-kind.",
     biggestDriverLabel: "cost",
   },
   {
@@ -93,6 +103,8 @@ const CATEGORIES = [
     packagingHint: "Poly bags, small boxes, stickers.",
     laborHint: "Kit assembly, labeling, measuring. 5 min × $15 = $1.25.",
     watchOut: "Ad costs (8–15%) can flip supplies from profitable to loss fast. Price with ads in mind.",
+    healthyNote: "Watch ad costs — 8–15% can flip your margin quickly.",
+    scaleNote: "Good margin. Consider Etsy Ads to push volume.",
     biggestDriverLabel: "cost",
   },
 ];
@@ -496,11 +508,11 @@ function renderRecommendation({ inp, netProfit, margin, cat, pBenchLo }) {
   } else if (margin < cat.benchHi) {
     toneClass = "";
     title = `You're inside the healthy range for ${catLower}.`;
-    text = `Your ${marginPct}% margin is working. ${cat.watchOut}`;
+    text = `Your ${marginPct}% margin is working. ${cat.healthyNote || ""}`.trim();
   } else {
     toneClass = "green";
     title = `Strong margin for ${catLower} — room to scale.`;
-    text = `At ${marginPct}% you can afford Etsy Ads, discounts, or offsite ads if you cross $10k. ${cat.watchOut}`;
+    text = `At ${marginPct}% you can afford Etsy Ads, discounts, or offsite ads if you cross $10k. ${cat.scaleNote || ""}`.trim();
   }
 
   els.recoCard.classList.remove("red", "amber", "green");
