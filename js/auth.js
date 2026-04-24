@@ -178,14 +178,19 @@ async function handleAuthSubmit(e) {
 }
 
 // ===== Header auth UI =====
+const LS_BILLING_PORTAL = 'https://plainfinancials.lemonsqueezy.com/billing';
+
 function renderAuthUI() {
   const slot = document.getElementById('authSlot');
   if (!slot) return;
 
   if (authUser) {
     const email = authUser.email || '';
+    // Only show "Manage" for real subscribers (admins with auto-pro via ADMIN_EMAILS won't have a subscription to manage)
+    const hasSubscription = authProfile && authProfile.etsy_plan === 'pro' && !ADMIN_EMAILS.includes(email.toLowerCase());
     slot.innerHTML = `
       <span class="auth-email" title="${email}">${email}</span>
+      ${hasSubscription ? `<a class="auth-link" href="${LS_BILLING_PORTAL}" target="_blank" rel="noopener">Manage</a>` : ''}
       <button class="auth-link" id="logoutBtn">Log out</button>
     `;
     document.getElementById('logoutBtn').addEventListener('click', async () => {
