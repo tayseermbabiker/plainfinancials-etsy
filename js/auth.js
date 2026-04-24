@@ -191,19 +191,36 @@ function renderAuthUI() {
     slot.innerHTML = `
       <span class="auth-email" title="${email}">${email}</span>
       ${hasSubscription ? `<a class="auth-link" href="${LS_BILLING_PORTAL}" target="_blank" rel="noopener">Manage</a>` : ''}
-      <button class="auth-link" id="logoutBtn">Log out</button>
+      <button class="auth-link" id="logoutBtn" type="button">Log out</button>
     `;
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await signOutUser();
-      onAuthChanged();
-    });
   } else {
     slot.innerHTML = `
-      <button class="auth-link" id="loginBtn">Log in</button>
+      <button class="auth-link" id="loginBtn" type="button">Log in</button>
     `;
-    document.getElementById('loginBtn').addEventListener('click', () => openAuthModal('login'));
   }
 }
+
+// Delegated click handling — works regardless of re-renders, and survives
+// tracking-prevention quirks (Edge/Brave) that can break direct listeners.
+document.addEventListener('click', async (e) => {
+  const target = e.target;
+  if (!target) return;
+  if (target.closest && target.closest('#logoutBtn')) {
+    e.preventDefault();
+    try { await signOutUser(); } catch (err) { console.error('signOut error:', err); }
+    // Force a clean state even if Supabase storage access was blocked
+    authUser = null;
+    authProfile = null;
+    // Clear any residual Supabase localStorage keys so a refresh doesn't restore the session
+    try {
+      Object.keys(localStorage).forEach(k => { if (k.startsWith('sb-')) localStorage.removeItem(k); });
+    } catch (err) { /* ignore — tracking-prevention blocks this in some browsers */ }
+    window.location.reload();
+  } else if (target.closest && target.closest('#loginBtn')) {
+    e.preventDefault();
+    if (typeof openAuthModal === 'function') openAuthModal('login');
+  }
+});
 
 // Called on initial load + after auth changes
 function onAuthChanged() {
