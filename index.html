@@ -45,7 +45,14 @@
           <input type="number" id="shippingCharged" value="4.75" step="0.01" min="0" />
         </div>
 
-        <!-- Cost block -->
+        <!-- Simple cost field — shown on Standard tab -->
+        <div class="field" id="rowCostSimple">
+          <label for="costSimple">Cost of item ($)</label>
+          <input type="number" id="costSimple" value="11.95" step="0.01" min="0" />
+          <div class="field-hint" id="costSimpleHint">Your all-in cost per unit — materials, packaging, your time, everything.</div>
+        </div>
+
+        <!-- Detailed cost block — shown on Advisor tab -->
         <div class="cost-block">
           <div class="cost-block-header">
             <div class="cost-block-title">Your real cost per item</div>
@@ -123,6 +130,7 @@
               <div class="summary-label">Net profit</div>
               <div class="summary-profit" id="netProfit">$3.66</div>
               <span class="margin-badge" id="marginBadge">15.0%</span>
+              <div class="benchmark-line" id="standardBenchmark"></div>
             </div>
             <div class="summary-right">
               <div class="stat-item">
@@ -140,6 +148,11 @@
                 <div class="stat-value" id="totalCosts">$16.70</div>
               </div>
             </div>
+          </div>
+
+          <div class="accuracy-hint">
+            <span class="accuracy-text">Most sellers miss packaging, their time, and equipment wear — typically another $3–5/order.</span>
+            <button type="button" class="accuracy-link" id="goAdvisor">Advisor breaks it down →</button>
           </div>
         </div>
 
@@ -250,7 +263,8 @@
 
           <div class="paywall" id="paywall">
             <div class="paywall-inner">
-              <div class="paywall-title">Unlock the Advisor</div>
+              <div class="paywall-title">See where your profit actually goes</div>
+              <div class="paywall-pitch">Find the costs most sellers miss — packaging, your time, equipment. Category-specific benchmarks and pricing advice.</div>
               <div class="paywall-sub">$3.99/month · or $36/year (save 25% — 3 months free)</div>
               <button type="button" class="paywall-btn" id="paywallCta">Create account</button>
               <div class="paywall-foot">Already have an account? <button type="button" class="auth-link" id="paywallLogin">Log in</button></div>

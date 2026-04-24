@@ -126,6 +126,10 @@ const els = {
   categoryHint: $("categoryHint"),
   salePrice: $("salePrice"),
   shippingCharged: $("shippingCharged"),
+  costSimple: $("costSimple"),
+  costSimpleHint: $("costSimpleHint"),
+  rowCostSimple: $("rowCostSimple"),
+  costBlock: document.querySelector(".cost-block"),
   materials: $("materials"),
   materialsLabel: $("materialsLabel"),
   materialsHint: $("materialsHint"),
@@ -234,7 +238,9 @@ function init() {
   // Tab switching
   els.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
+      const prevTab = activeTab;
       activeTab = tab.dataset.tab;
+      syncCostFieldsOnTabSwitch(prevTab, activeTab);
       els.tabs.forEach((t) => {
         const isActive = t === tab;
         t.classList.toggle("active", isActive);
@@ -242,10 +248,20 @@ function init() {
       });
       els.resultsStandard.hidden = activeTab !== "standard";
       els.resultsAdvisor.hidden = activeTab !== "advisor";
+      applyTabInputMode();
+      calculate();
       updateAuthSlotVisibility();
     });
   });
+  applyTabInputMode();
   updateAuthSlotVisibility();
+
+  // Accuracy hint: Advisor shortcut
+  const goAdv = document.getElementById("goAdvisor");
+  if (goAdv) goAdv.addEventListener("click", () => {
+    const advTab = document.querySelector('.tab[data-tab="advisor"]');
+    if (advTab) advTab.click();
+  });
 
   // Category change updates visibility + benchmark, reset stale values
   els.category.addEventListener("change", () => {
@@ -267,7 +283,7 @@ function init() {
 
   // All other input listeners
   [
-    els.salePrice, els.materials, els.packaging, els.laborHours, els.laborRate,
+    els.salePrice, els.costSimple, els.materials, els.packaging, els.laborHours, els.laborRate,
     els.equipment, els.country, els.etsyAds, els.offsiteAds, els.goalInput,
   ].forEach((el) => {
     if (!el) return;
@@ -280,6 +296,40 @@ function init() {
 
 function currentCategory() {
   return CATEGORIES.find((c) => c.id === els.category.value) || CATEGORIES[0];
+}
+
+// Show simple single-cost field on Standard; show the detailed cost block on Advisor
+function applyTabInputMode() {
+  if (!els.rowCostSimple || !els.costBlock) return;
+  if (activeTab === "standard") {
+    els.rowCostSimple.hidden = false;
+    els.costBlock.hidden = true;
+  } else {
+    els.rowCostSimple.hidden = true;
+    els.costBlock.hidden = false;
+  }
+}
+
+// When switching tabs, keep inputs coherent:
+// Standard → Advisor: seed Materials with Standard's single cost, zero the rest.
+// Advisor → Standard: roll up the detailed split into the single cost field.
+function syncCostFieldsOnTabSwitch(prev, next) {
+  if (prev === next) return;
+  const cat = currentCategory();
+  if (next === "advisor" && prev === "standard") {
+    const costTotal = parseFloat(els.costSimple.value) || 0;
+    if (cat.hasMaterials) els.materials.value = costTotal.toFixed(2);
+    if (cat.hasPackaging) els.packaging.value = 0;
+    if (cat.hasLabor) { els.laborHours.value = 0; /* keep rate */ }
+    if (cat.hasEquipment) els.equipment.value = 0;
+  } else if (next === "standard" && prev === "advisor") {
+    const materials = cat.hasMaterials ? (parseFloat(els.materials.value) || 0) : 0;
+    const packaging = cat.hasPackaging ? (parseFloat(els.packaging.value) || 0) : 0;
+    const laborCost = cat.hasLabor ? (parseFloat(els.laborHours.value) || 0) * (parseFloat(els.laborRate.value) || 0) : 0;
+    const equipment = cat.hasEquipment ? (parseFloat(els.equipment.value) || 0) : 0;
+    const total = materials + packaging + laborCost + equipment;
+    els.costSimple.value = total.toFixed(2);
+  }
 }
 
 // Reset cost defaults sensibly when switching categories
@@ -301,6 +351,9 @@ function resetCostDefaults() {
   els.equipment.value = d.equipment;
   els.shippingCharged.value = d.shippingCharged;
   els.shippingCost.value = d.shippingCost;
+  // Simple cost = sum of Advisor defaults (so Standard shows consistent totals)
+  const simpleDefault = (d.materials || 0) + (d.packaging || 0) + ((d.laborHours || 0) * (d.laborRate || 0)) + (d.equipment || 0);
+  els.costSimple.value = simpleDefault.toFixed(2);
   shippingCostEdited = false; // re-enable auto-sync after category switch
 }
 
@@ -348,14 +401,29 @@ function readInputs() {
   const cat = currentCategory();
   const salePrice = parseFloat(els.salePrice.value) || 0;
   const shippingCharged = cat.hasShippingCharged ? (parseFloat(els.shippingCharged.value) || 0) : 0;
-  const materials = cat.hasMaterials ? (parseFloat(els.materials.value) || 0) : 0;
-  const packaging = cat.hasPackaging ? (parseFloat(els.packaging.value) || 0) : 0;
-  const laborHours = cat.hasLabor ? (parseFloat(els.laborHours.value) || 0) : 0;
-  const laborRate = cat.hasLabor ? (parseFloat(els.laborRate.value) || 0) : 0;
-  const equipment = cat.hasEquipment ? (parseFloat(els.equipment.value) || 0) : 0;
   const shippingCost = cat.hasShippingCost ? (parseFloat(els.shippingCost.value) || 0) : 0;
-  const laborCost = laborHours * laborRate;
-  const itemCost = materials + packaging + laborCost + equipment;
+
+  // Cost inputs depend on active tab
+  let materials, packaging, laborHours, laborRate, laborCost, equipment, itemCost;
+  if (activeTab === "standard") {
+    // Single cost field — user provides total
+    const costSimple = parseFloat(els.costSimple.value) || 0;
+    itemCost = costSimple;
+    materials = costSimple;   // for breakdown purposes if user switches tabs
+    packaging = 0;
+    laborHours = 0;
+    laborRate = 0;
+    laborCost = 0;
+    equipment = 0;
+  } else {
+    materials = cat.hasMaterials ? (parseFloat(els.materials.value) || 0) : 0;
+    packaging = cat.hasPackaging ? (parseFloat(els.packaging.value) || 0) : 0;
+    laborHours = cat.hasLabor ? (parseFloat(els.laborHours.value) || 0) : 0;
+    laborRate = cat.hasLabor ? (parseFloat(els.laborRate.value) || 0) : 0;
+    equipment = cat.hasEquipment ? (parseFloat(els.equipment.value) || 0) : 0;
+    laborCost = laborHours * laborRate;
+    itemCost = materials + packaging + laborCost + equipment;
+  }
   const totalCosts = itemCost + shippingCost;
   return {
     cat, salePrice, shippingCharged,
@@ -419,6 +487,14 @@ function renderStandard({ revenue, totalEtsyFees, totalCosts, netProfit, margin 
   els.totalFees.textContent = fmt(totalEtsyFees);
   els.totalCosts.textContent = fmt(totalCosts);
   els.revenue.textContent = fmt(revenue);
+
+  // Benchmark line — turns "$5.36, 21.9%" into plain English with category context
+  const benchEl = document.getElementById("standardBenchmark");
+  if (benchEl) {
+    const lo = Math.round(cat.benchLo * 100);
+    const hi = Math.round(cat.benchHi * 100);
+    benchEl.textContent = `${cat.name} typically runs ${lo}–${hi}%`;
+  }
 }
 
 function applyMarginClass(el, margin, cat) {

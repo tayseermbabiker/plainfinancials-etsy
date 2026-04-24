@@ -1059,6 +1059,60 @@ body {
   color: var(--accent-dark);
 }
 
+.paywall-pitch {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.45;
+  margin-bottom: 10px;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------- Accuracy hint on Standard ---------- */
+.accuracy-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #FAFBFC;
+  border: 0.5px dashed var(--border);
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.accuracy-text {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.accuracy-link {
+  background: none;
+  border: none;
+  color: var(--accent-dark);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.accuracy-link:hover {
+  background: var(--accent-light);
+}
+
+.benchmark-line {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
 /* ---------- Auth Modal ---------- */
 .modal {
   position: fixed;
