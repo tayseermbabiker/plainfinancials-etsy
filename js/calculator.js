@@ -223,12 +223,30 @@ function init() {
   // Pro flag via URL (dev/testing)
   const params = new URLSearchParams(window.location.search);
   if (params.get("pro") === "1") isPro = true;
+
+  // Show thank-you after successful LS checkout return
+  if (params.get("payment") === "success") {
+    setTimeout(() => {
+      alert("Payment received! Your Advisor access will activate within 30 seconds as Lemon Squeezy confirms the subscription.");
+    }, 200);
+    // Clean URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("payment");
+    window.history.replaceState({}, document.title, url.pathname + url.search);
+  }
+
   updatePaywall();
 
-  // Paywall CTAs
+  // Paywall CTAs — behaviour depends on auth state, resolved at click time
   const paywallCta = $("paywallCta");
   if (paywallCta) paywallCta.addEventListener("click", () => {
-    if (typeof openAuthModal === "function") openAuthModal("signup");
+    const authed = typeof authUser !== "undefined" && authUser !== null;
+    if (!authed) {
+      if (typeof openAuthModal === "function") openAuthModal("signup");
+    } else {
+      // Signed in but not Pro → send them to LS checkout
+      window.location.href = buildCheckoutUrl();
+    }
   });
   const paywallLogin = $("paywallLogin");
   if (paywallLogin) paywallLogin.addEventListener("click", () => {
@@ -705,6 +723,17 @@ function solveForMargin(targetMargin, { shippingCharged, shippingCost, itemCost,
 }
 
 // ---------- Paywall ----------
+const LS_CHECKOUT_URL = "https://plainfinancials.lemonsqueezy.com/checkout/buy/4056bee2-7542-4f0b-9111-8355aeb3a558";
+
+function buildCheckoutUrl() {
+  if (typeof authUser === "undefined" || !authUser) return LS_CHECKOUT_URL;
+  const params = new URLSearchParams();
+  params.set("checkout[email]", authUser.email || "");
+  params.set("checkout[custom][user_id]", authUser.id || "");
+  params.set("checkout[success_url]", `${window.location.origin}/?payment=success`);
+  return `${LS_CHECKOUT_URL}?${params.toString()}`;
+}
+
 function updatePaywall() {
   const authed = typeof authUser !== "undefined" && authUser !== null;
   const unlocked = isPro || (authed && typeof userHasPro === "function" && userHasPro(authUser));
@@ -715,6 +744,13 @@ function updatePaywall() {
     els.paywall.classList.remove("hidden");
     els.advisorStack.classList.add("blurred");
   }
+
+  // Swap CTA label based on auth state (signed-in non-pro users see "Unlock")
+  const paywallCta = document.getElementById("paywallCta");
+  if (paywallCta) {
+    paywallCta.textContent = authed ? "Unlock Advisor — $3.99/mo" : "Create account";
+  }
+
   updateAuthSlotVisibility();
 }
 

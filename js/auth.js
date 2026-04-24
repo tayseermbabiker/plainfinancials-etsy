@@ -15,20 +15,48 @@ function sb() {
 
 // ===== State =====
 let authUser = null;
+let authProfile = null; // { etsy_plan, etsy_expires_at, ... }
 
 async function loadSession() {
   const client = sb();
   if (!client) return null;
   const { data: { session } } = await client.auth.getSession();
   authUser = session?.user || null;
+  authProfile = null;
+  if (authUser) {
+    await loadProfile();
+  }
   return authUser;
 }
 
-// During beta: any logged-in user gets Pro.
-// Admins always Pro. Later: check profiles.etsy_plan.
+async function loadProfile() {
+  const client = sb();
+  if (!client || !authUser) { authProfile = null; return; }
+  const { data, error } = await client
+    .from("profiles")
+    .select("etsy_plan, etsy_expires_at, email")
+    .eq("id", authUser.id)
+    .single();
+  if (error) {
+    console.warn("loadProfile error:", error.message);
+    authProfile = null;
+    return;
+  }
+  authProfile = data;
+}
+
+// True if user has an active paid Advisor plan (or is admin).
 function userHasPro(user) {
   if (!user) return false;
-  return true; // beta mode — everyone who signs up gets Advisor
+  if (ADMIN_EMAILS.includes((user.email || "").toLowerCase())) return true;
+  if (!authProfile) return false;
+  if (authProfile.etsy_plan !== "pro") return false;
+  // If expiry is set and in the past, they're no longer Pro
+  if (authProfile.etsy_expires_at) {
+    const exp = new Date(authProfile.etsy_expires_at).getTime();
+    if (exp < Date.now()) return false;
+  }
+  return true;
 }
 
 async function signUpUser(email, password, fullName) {
@@ -144,6 +172,7 @@ async function handleAuthSubmit(e) {
   }
 
   authUser = result.data?.user || null;
+  if (authUser) await loadProfile();
   closeAuthModal();
   onAuthChanged();
 }
@@ -184,8 +213,10 @@ async function initAuth() {
   // Listen for auth state changes (e.g. other tabs)
   const client = sb();
   if (client) {
-    client.auth.onAuthStateChange((_event, session) => {
+    client.auth.onAuthStateChange(async (_event, session) => {
       authUser = session?.user || null;
+      authProfile = null;
+      if (authUser) await loadProfile();
       onAuthChanged();
     });
   }
