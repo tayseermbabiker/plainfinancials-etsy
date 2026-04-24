@@ -104,7 +104,7 @@ function setAuthMode(mode) {
   const isSignup = mode === 'signup';
   document.getElementById('authTitle').textContent = isSignup ? 'Create your account' : 'Log in';
   document.getElementById('authSub').textContent = isSignup
-    ? 'Unlock the Advisor — $3.99/mo or $36/yr'
+    ? 'Unlock the Advisor — $3.99/mo or $29/yr'
     : 'Welcome back';
   document.getElementById('authSubmit').textContent = isSignup ? 'Create account' : 'Log in';
   document.getElementById('nameField').hidden = !isSignup;
