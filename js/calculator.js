@@ -723,7 +723,7 @@ function solveForMargin(targetMargin, { shippingCharged, shippingCost, itemCost,
 }
 
 // ---------- Paywall ----------
-const LS_CHECKOUT_URL = "https://plainfinancials.lemonsqueezy.com/checkout/buy/4056bee2-7542-4f0b-9111-8355aeb3a558";
+const LS_CHECKOUT_URL = "https://plainfinancials.lemonsqueezy.com/checkout/buy/9387d651-ca04-45b2-bef3-35daa7174930";
 
 function buildCheckoutUrl() {
   if (typeof authUser === "undefined" || !authUser) return LS_CHECKOUT_URL;
