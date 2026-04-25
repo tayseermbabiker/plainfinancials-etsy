@@ -3,7 +3,7 @@
 const SUPABASE_URL = 'https://yshqwuxfcxirqaolnfve.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzaHF3dXhmY3hpcnFhb2xuZnZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTI3MTMsImV4cCI6MjA4MDQ4ODcxM30.psrwfVzTtx5VTANYrTlyt7CUW87MEqccHx3HAh6vpu4';
 
-const ADMIN_EMAILS = ['tayseermbabiker@gmail.com', 'zahraamohd1@yahoo.com'];
+const ADMIN_EMAILS = ['tayseermbabiker@gmail.com', 'zahraamohd1@yahoo.com', 'totta1785@gmail.com'];
 
 let sbClient = null;
 function sb() {
