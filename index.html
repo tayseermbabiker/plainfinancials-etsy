@@ -222,48 +222,56 @@
               </div>
             </div>
 
-            <!-- Recommendation — LOCKED -->
-            <div class="reco-card advisor-locked" id="recoCard">
+            <!-- Recommendation — header visible, content locked -->
+            <div class="reco-card" id="recoCard">
               <div class="reco-header">
-                <div class="reco-tag">Recommendation</div>
+                <div class="reco-tag">Recommendation <svg class="lock-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
                 <div class="reco-benchmark" id="recoBenchmark">Handmade benchmark: 25–35%</div>
               </div>
-              <div class="reco-title" id="recoTitle"></div>
-              <div class="reco-text" id="recoText"></div>
+              <div class="advisor-locked-content">
+                <div class="reco-title" id="recoTitle"></div>
+                <div class="reco-text" id="recoText"></div>
+              </div>
             </div>
 
-            <!-- Goal + ads impact — LOCKED -->
-            <div class="cards-grid advisor-locked">
+            <!-- Goal + ads impact — headers visible, content locked -->
+            <div class="cards-grid">
               <div class="card">
-                <div class="card-label">Monthly income goal</div>
-                <div class="goal-input-row">
-                  <span>I want to earn</span>
-                  <span class="goal-dollar">$</span>
-                  <input type="number" id="goalInput" value="500" min="0" step="50" />
-                  <span>/mo</span>
+                <div class="card-label">Monthly income goal <svg class="lock-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+                <div class="advisor-locked-content">
+                  <div class="goal-input-row">
+                    <span>I want to earn</span>
+                    <span class="goal-dollar">$</span>
+                    <input type="number" id="goalInput" value="500" min="0" step="50" />
+                    <span>/mo</span>
+                  </div>
+                  <div class="card-sub" id="goalResult">—</div>
                 </div>
-                <div class="card-sub" id="goalResult">—</div>
               </div>
 
               <div class="card">
-                <div class="card-label">Offsite ads impact</div>
-                <div class="card-main" id="adsImpactMain">—</div>
-                <div class="card-sub" id="adsImpactSub">—</div>
+                <div class="card-label">Offsite ads impact <svg class="lock-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+                <div class="advisor-locked-content">
+                  <div class="card-main" id="adsImpactMain">—</div>
+                  <div class="card-sub" id="adsImpactSub">—</div>
+                </div>
               </div>
             </div>
 
-            <!-- Did I forget anything — LOCKED -->
-            <div class="card forgot-card advisor-locked">
-              <div class="card-label">Did I forget anything?</div>
-              <ul class="forgot-list">
-                <li><strong>Photography / props:</strong> backdrops, lighting, the first batch used for photos.</li>
-                <li><strong>Sample waste:</strong> trial runs, rejects, photos-only versions (~3% of materials).</li>
-                <li><strong>Returns allowance:</strong> 2–5% of revenue gets refunded or replaced.</li>
-                <li><strong>Listing renewal:</strong> $0.20 every 4 months per listing that doesn't sell.</li>
-                <li><strong>Software:</strong> Canva Pro, Photoshop, Cricut Access, design subs.</li>
-                <li><strong>Etsy Plus / Pattern:</strong> $10/mo + $15/mo if you use them.</li>
-              </ul>
-              <div class="card-sub forgot-sub">Add any of these to your cost inputs above if they apply.</div>
+            <!-- Did I forget anything — header visible, content locked -->
+            <div class="card forgot-card">
+              <div class="card-label">Did I forget anything? <svg class="lock-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+              <div class="advisor-locked-content">
+                <ul class="forgot-list">
+                  <li><strong>Photography / props:</strong> backdrops, lighting, the first batch used for photos.</li>
+                  <li><strong>Sample waste:</strong> trial runs, rejects, photos-only versions (~3% of materials).</li>
+                  <li><strong>Returns allowance:</strong> 2–5% of revenue gets refunded or replaced.</li>
+                  <li><strong>Listing renewal:</strong> $0.20 every 4 months per listing that doesn't sell.</li>
+                  <li><strong>Software:</strong> Canva Pro, Photoshop, Cricut Access, design subs.</li>
+                  <li><strong>Etsy Plus / Pattern:</strong> $10/mo + $15/mo if you use them.</li>
+                </ul>
+                <div class="card-sub forgot-sub">Add any of these to your cost inputs above if they apply.</div>
+              </div>
             </div>
 
             <!-- Cross-sell strip -->

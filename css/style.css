@@ -1039,13 +1039,23 @@ body {
   color: var(--text-2);
 }
 
-/* Per-card lock — only when the panel is in locked state */
-.advisor-panel.locked .advisor-locked {
+/* Per-card content lock — headers stay visible, only inner content blurs */
+.advisor-panel.locked .advisor-locked-content {
   filter: blur(4px);
   opacity: 0.55;
   pointer-events: none;
   user-select: none;
 }
+
+/* Lock icon next to locked-card headers — only shown when locked */
+.lock-icon {
+  display: none;
+  vertical-align: middle;
+  margin-left: 6px;
+  color: var(--text-3);
+  opacity: 0.7;
+}
+.advisor-panel.locked .lock-icon { display: inline-block; }
 
 /* ---------- Footer ---------- */
 .footer {
