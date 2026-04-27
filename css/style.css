@@ -1019,7 +1019,8 @@ body {
 .paywall-btn:hover { background: var(--accent-dark); }
 
 .paywall.hidden { display: none; }
-.advisor-stack.blurred {
+.advisor-panel.blurred,
+#advisorStack.blurred {
   filter: blur(7px);
   pointer-events: none;
   user-select: none;
