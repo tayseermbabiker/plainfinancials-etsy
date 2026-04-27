@@ -973,24 +973,23 @@ body {
 .paywall {
   position: absolute;
   inset: -8px;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-radius: 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 16px;
+  pointer-events: none;
   z-index: 10;
 }
 
 .paywall-inner {
   text-align: center;
-  padding: 24px 28px;
+  padding: 22px 26px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--accent);
   border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  max-width: 320px;
+  box-shadow: 0 12px 32px rgba(15, 118, 110, 0.18), 0 2px 8px rgba(0,0,0,0.06);
+  max-width: 360px;
+  pointer-events: auto;
 }
 
 .paywall-title {
@@ -1021,9 +1020,10 @@ body {
 
 .paywall.hidden { display: none; }
 .advisor-stack.blurred {
-  filter: blur(4px);
+  filter: blur(7px);
   pointer-events: none;
   user-select: none;
+  opacity: 0.75;
 }
 
 /* ---------- Footer ---------- */
