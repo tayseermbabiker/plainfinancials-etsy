@@ -739,10 +739,10 @@ function updatePaywall() {
   const unlocked = isPro || (authed && typeof userHasPro === "function" && userHasPro(authUser));
   if (unlocked) {
     els.paywall.classList.add("hidden");
-    els.advisorStack.classList.remove("blurred");
+    els.advisorStack.classList.remove("locked");
   } else {
     els.paywall.classList.remove("hidden");
-    els.advisorStack.classList.add("blurred");
+    els.advisorStack.classList.add("locked");
   }
 
   // Swap CTA label based on auth state (signed-in non-pro users see "Unlock")

@@ -185,17 +185,7 @@
               </div>
             </div>
 
-            <!-- Recommendation -->
-            <div class="reco-card" id="recoCard">
-              <div class="reco-header">
-                <div class="reco-tag">Recommendation</div>
-                <div class="reco-benchmark" id="recoBenchmark">Handmade benchmark: 25–35%</div>
-              </div>
-              <div class="reco-title" id="recoTitle"></div>
-              <div class="reco-text" id="recoText"></div>
-            </div>
-
-            <!-- Targets + breakdown -->
+            <!-- Targets + breakdown — VISIBLE to free users -->
             <div class="cards-grid">
               <div class="card">
                 <div class="card-label">Price targets <span class="card-label-sub">item price only</span></div>
@@ -220,8 +210,30 @@
               </div>
             </div>
 
-            <!-- Goal + ads impact -->
-            <div class="cards-grid">
+            <!-- Inline upsell card — sits between visible numbers and locked depth -->
+            <div class="paywall" id="paywall">
+              <div class="paywall-inner">
+                <div class="paywall-tag">Advisor</div>
+                <div class="paywall-title">Get the analysis behind these numbers</div>
+                <div class="paywall-pitch">Category-specific advice, monthly goal calculator, offsite ads impact, and the costs most sellers forget.</div>
+                <div class="paywall-sub">$3.99/month · or $29/year (4 months free)</div>
+                <button type="button" class="paywall-btn" id="paywallCta">Create account</button>
+                <div class="paywall-foot">Already have an account? <button type="button" class="auth-link" id="paywallLogin">Log in</button></div>
+              </div>
+            </div>
+
+            <!-- Recommendation — LOCKED -->
+            <div class="reco-card advisor-locked" id="recoCard">
+              <div class="reco-header">
+                <div class="reco-tag">Recommendation</div>
+                <div class="reco-benchmark" id="recoBenchmark">Handmade benchmark: 25–35%</div>
+              </div>
+              <div class="reco-title" id="recoTitle"></div>
+              <div class="reco-text" id="recoText"></div>
+            </div>
+
+            <!-- Goal + ads impact — LOCKED -->
+            <div class="cards-grid advisor-locked">
               <div class="card">
                 <div class="card-label">Monthly income goal</div>
                 <div class="goal-input-row">
@@ -240,8 +252,8 @@
               </div>
             </div>
 
-            <!-- Did I forget anything -->
-            <div class="card forgot-card">
+            <!-- Did I forget anything — LOCKED -->
+            <div class="card forgot-card advisor-locked">
               <div class="card-label">Did I forget anything?</div>
               <ul class="forgot-list">
                 <li><strong>Photography / props:</strong> backdrops, lighting, the first batch used for photos.</li>
@@ -258,16 +270,6 @@
             <div class="crosssell">
               <span class="crosssell-text">Run more than just Etsy? Get your first full business financial report free.</span>
               <a class="crosssell-link" href="https://plainfinancials.com" target="_blank" rel="noopener">Try PlainFinancials <span class="arrow-right">→</span></a>
-            </div>
-          </div>
-
-          <div class="paywall" id="paywall">
-            <div class="paywall-inner">
-              <div class="paywall-title">See where your profit actually goes</div>
-              <div class="paywall-pitch">Find the costs most sellers miss — packaging, your time, equipment. Category-specific benchmarks and pricing advice.</div>
-              <div class="paywall-sub">$3.99/month · or $29/year (save 39% — 4 months free)</div>
-              <button type="button" class="paywall-btn" id="paywallCta">Create account</button>
-              <div class="paywall-foot">Already have an account? <button type="button" class="auth-link" id="paywallLogin">Log in</button></div>
             </div>
           </div>
         </div>
