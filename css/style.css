@@ -1039,6 +1039,13 @@ body {
   color: var(--text-2);
 }
 
+.paywall-billed {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.2px;
+}
+
 /* Per-card content lock — headers stay visible, only inner content blurs */
 .advisor-panel.locked .advisor-locked-content {
   filter: blur(4px);
