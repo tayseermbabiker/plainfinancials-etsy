@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    // When proxied through plainfinancials.com/etsy (with or without trailing
+    // slash), force relative asset paths to resolve under /etsy/. Without
+    // this, visiting /etsy (no slash) makes the browser request css/style.css
+    // from the root and load the parent site's 404 HTML as CSS/JS.
+    if (location.hostname !== 'etsypricing.netlify.app' && /^\/etsy(\/|$)/.test(location.pathname)) {
+      document.write('<base href="/etsy/">');
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Etsy Profit Calculator 2026 — Accurate for 16 Countries</title>
   <meta name="description" content="The only Etsy calculator built for non-US sellers. Category-aware margins, real cost inputs, and actionable pricing advice." />
