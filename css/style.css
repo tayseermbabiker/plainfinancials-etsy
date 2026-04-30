@@ -1092,17 +1092,183 @@ body {
   }
   body {
     align-items: flex-start;
-    padding: 12px;
+    padding: 14px;
   }
-  .donut-wrap { width: 150px; height: 150px; }
-}
-
-@media (max-height: 780px) {
-  .profit-value { font-size: 32px; }
-  .donut-wrap { width: 160px; height: 160px; }
   .panel { padding: 20px; }
   .inputs-panel { gap: 12px; }
-  body { padding: 14px; }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  body {
+    padding: 10px;
+    font-size: 14px;
+  }
+  .app { gap: 12px; }
+
+  /* Header — stack into two rows on small screens */
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 12px;
+    gap: 8px 10px;
+    row-gap: 8px;
+  }
+  .brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .auth-slot {
+    flex: 0 0 auto;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .auth-email {
+    max-width: 110px;
+    font-size: 12px;
+  }
+  .auth-link {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+  .tabs {
+    order: 3;
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .tab {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 8px 12px;
+  }
+
+  /* Panels — tighter padding */
+  .panel { padding: 16px; border-radius: 10px; }
+  .inputs-panel { gap: 12px; }
+
+  /* Summary row — stack profit on top, stats wrap below */
+  .summary-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 14px;
+  }
+  .summary-left { text-align: left; }
+  .summary-profit { font-size: 26px; }
+  .summary-right {
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border);
+  }
+  .stat-item { flex: 1 1 0; text-align: center; min-width: 0; }
+  .stat-value { font-size: 13px; }
+  .stat-label { font-size: 9.5px; }
+  .divider-v { height: 24px; }
+
+  /* Cards grid — single column */
+  .cards-grid { grid-template-columns: 1fr; gap: 10px; }
+  .card { padding: 12px 14px; }
+
+  /* Verdict hero — stack target below */
+  .verdict-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px;
+  }
+  .verdict-target {
+    text-align: left;
+    padding-left: 0;
+    padding-top: 10px;
+    border-top: 0.5px solid #F6D99A;
+  }
+  .verdict-hero.green .verdict-target { border-top-color: rgba(16, 185, 129, 0.2); }
+  .verdict-hero.red .verdict-target { border-top-color: rgba(239, 68, 68, 0.2); }
+
+  /* Reco header — let it wrap */
+  .reco-header {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .reco-card { padding: 12px 14px; }
+  .reco-title { font-size: 14px; }
+  .reco-text { font-size: 12px; }
+
+  /* Cost block — keep it tidy */
+  .cost-block { padding: 12px; }
+
+  /* Accuracy hint — stack */
+  .accuracy-hint {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  .accuracy-link {
+    align-self: flex-end;
+    padding: 4px 0;
+  }
+
+  /* Cross-sell — stack */
+  .crosssell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+  }
+  .crosssell-text { font-size: 12.5px; }
+
+  /* Paywall — center the foot text */
+  .paywall-inner { padding: 16px; }
+  .paywall-title { font-size: 15px; }
+  .paywall-pitch { font-size: 12.5px; max-width: 100%; }
+  .paywall-foot {
+    display: block;
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  .paywall-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Goal input row — let it breathe */
+  .goal-input-row {
+    flex-wrap: wrap;
+    font-size: 12.5px;
+  }
+
+  /* Auth modal — full-bleed feel on phones */
+  .modal { padding: 12px; }
+  .modal-card { padding: 22px 18px 18px; }
+  .modal-title { font-size: 18px; }
+
+  /* Footer — wrap nicely */
+  .footer {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding: 10px 4px;
+    text-align: center;
+    justify-content: center;
+    font-size: 11.5px;
+    line-height: 1.5;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .summary-profit { font-size: 24px; }
+  .stat-value { font-size: 12.5px; }
+  .auth-email { max-width: 80px; }
+  .brand-product { display: none; }
+  .brand-sep { display: none; }
 }
 
 /* ---------- Header: Auth Slot ---------- */
